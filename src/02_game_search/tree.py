@@ -1,5 +1,5 @@
-from idlelib.tree import TreeNode
 from typing import List
+import copy
 
 
 #
@@ -18,28 +18,61 @@ from typing import List
 # Each node represents current state with matrix (each value is number: 1 is cross, 0 is none, -1 is circle
 #
 
-
 class TreeNode:
-    board: List[List[int]]
-    moves: List[TreeNode]
-    isCurrentPlayerMe: bool
+    def __init__(self, is_current_player_me: bool, board: List[List[int]] = None):
+        # 0: Empty, 1: Me (Cross), -1: Opponent (Circle)
+        if board is None:
+            self.board = [[0 for _ in range(3)] for _ in range(3)]
+        else:
+            self.board = board
+        self.children: List[TreeNode] = []
+        self.is_current_player_me = is_current_player_me
 
-    def __init__(self, isCurrentPlayerMe: bool, cols: int = 3, rows: int = 3, default_value: int = 0):
-        self.board = [[default_value for _ in range(cols)] for _ in range(rows)]
-        self.moves = []
-        self.isCurrentPlayerMe = isCurrentPlayerMe
+    def generate_children(self):
+        """ Generates all possible next moves (states) from current state """
+        player_val = 1 if self.is_current_player_me else -1
 
-# Initial game state - and I am starting
-tree: TreeNode = TreeNode(True)
+        for r in range(3):
+            for c in range(3):
+                if self.board[r][c] == 0:
+                    # Create deep copy of board for the new state
+                    new_board = copy.deepcopy(self.board)
+                    new_board[r][c] = player_val
 
-# Some of the moves I can do in this turn - turn 1 - from initial state to another state
-move_one = TreeNode(False) # This one will be opponents turn
-move_one.board[0][0] = 1 # I made a move of cross in the left upper corner in this specific move
-tree.moves.append(move_one)
+                    # Create child node (switch turn)
+                    child = TreeNode(not self.is_current_player_me, new_board)
+                    self.children.append(child)
 
-move_two = TreeNode(False) # # This one will also be opponents turn
-move_two.board[0][2] = 1 # I made a move of cross in the right upper corner in this specific move
-tree.moves.append(move_two)
+
+def print_tree(node: TreeNode, depth: int = 0, max_depth: int = 2):
+    """ Recursively prints the game tree up to max_depth """
+    if depth > max_depth:
+        return
+
+    indent = "    " * depth
+    # Symbol map: 1 -> X, -1 -> O, 0 -> .
+    symbols = {1: "X", -1: "O", 0: "."}
+
+    # Flatten board for single-line display in tree
+    board_str = "|".join(["".join([symbols[x] for x in row]) for row in node.board])
+    turn = "My Turn" if node.is_current_player_me else "Opponent"
+    print(f"{indent}State: [{board_str}] ({turn})")
+
+    for child in node.children:
+        print_tree(child, depth + 1, max_depth)
+
+# Usage
+root = TreeNode(is_current_player_me=True) # My turn (X)
+
+# Generate 1st layer (My moves)
+root.generate_children()
+
+# Generate 2nd layer (Opponent responses for each of my moves)
+for child in root.children:
+    child.generate_children()
+
+print("Game Tree (Depth 2):")
+print_tree(root, max_depth=2)
 
 # ... And so on other moves
 
