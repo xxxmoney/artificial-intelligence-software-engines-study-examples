@@ -1,4 +1,4 @@
-from src.game_state import IGameState
+from src.game_state import IGameState, GameStatus, IHasEvaluableState
 from src.tic_tac_toe_simple import TicTacToeState, Field
 from src.tree import TreeNode
 
@@ -13,34 +13,76 @@ from src.tree import TreeNode
 #
 
 
+def minimax(node: TreeNode[IGameState], depth: int = 5) -> IGameState:
+    max_score = float('-inf')
+    best_state = None
 
-def minimax(state: IGameState, depth = 2):
-    raise NotImplementedError()
+    for state in node.state.generate_possible_states():
+        state_max_score = find_score(node, depth)
+        if state_max_score > max_score:
+            max_score = state_max_score
+            best_state = state
 
+    return best_state
 
-def min():
-    raise NotImplementedError()
+def find_score(node: TreeNode[IGameState], depth) -> float:
+    # Either the game has finished or the max depth was reached
+    if node.state.get_status != GameStatus.RUNNING or depth <= 0:
+        if not isinstance(node.state, IHasEvaluableState):
+            raise TypeError("State must be of type IHasEvaluableState")
+        score = node.state.evaluate()
+        node.score = score
+        return score
 
+    # We are playing this state, so we want to find max score
+    if not node.state.is_me():
+        return find_max_score(node, depth - 1)
+    # Opponent is playing this state, and they want to find theirs max - so ours min
+    else:
+        return find_min_score(node, depth - 1)
 
-def max():
-    raise NotImplementedError()
+def find_max_score(node: TreeNode[IGameState], depth) -> float:
+    max_score = float('-inf')
+
+    for state in node.state.generate_possible_states():
+        child_node = node.add_child(state)
+
+        max_score = max(
+            max_score,
+            find_score(child_node, depth - 1)
+        )
+
+    return max_score
+
+def find_min_score(node: TreeNode[IGameState], depth) -> float:
+    min_score = float('inf')
+
+    for state in node.state.generate_possible_states():
+        child_node = node.add_child(state)
+
+        min_score = min(
+            min_score,
+            find_score(child_node, depth - 1)
+        )
+
+    return min_score
 
 
 
 if __name__ == "__main__":
     #
-    # Example Usage
+    # Example Usage with simpler simple tick tack toe
     #
 
     # Start with me, empty board
     root = TreeNode(TicTacToeState(Field.me(), None))
 
-    # Generate possible states - with opponent
-    for state in root.state.generate_possible_states():
-        child = root.add_child(state)
+    # Run minimax
+    best_state = minimax(root)
 
-        for child_state in state.generate_possible_states():
-            child.add_child(child_state)
-
+    print(f"Best state:\n{best_state} \n\n")
+    print("Tree:")
     root.print_tree()
+
+
 
