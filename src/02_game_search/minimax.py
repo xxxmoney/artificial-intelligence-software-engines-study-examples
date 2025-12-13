@@ -18,9 +18,11 @@ def minimax(node: TreeNode[IGameState], depth: int = 5) -> IGameState:
     best_state = None
 
     for state in node.state.generate_possible_states():
-        state_max_score = find_score(node, depth)
-        if state_max_score > max_score:
-            max_score = state_max_score
+        child_node = node.add_child(state)
+        child_node.score = find_score(child_node, depth)
+
+        if child_node.score > max_score:
+            max_score = child_node.score
             best_state = state
 
     return best_state
@@ -30,16 +32,18 @@ def find_score(node: TreeNode[IGameState], depth) -> float:
     if node.state.get_status != GameStatus.RUNNING or depth <= 0:
         if not isinstance(node.state, IHasEvaluableState):
             raise TypeError("State must be of type IHasEvaluableState")
-        score = node.state.evaluate()
-        node.score = score
-        return score
+        node.score = node.state.evaluate()
+
+        return node.score
 
     # We are playing this state, so we want to find max score
     if not node.state.is_me():
-        return find_max_score(node, depth - 1)
+        node.score = find_max_score(node, depth - 1)
     # Opponent is playing this state, and they want to find theirs max - so ours min
     else:
-        return find_min_score(node, depth - 1)
+        node.score = find_min_score(node, depth - 1)
+
+    return node.score
 
 def find_max_score(node: TreeNode[IGameState], depth) -> float:
     max_score = float('-inf')
