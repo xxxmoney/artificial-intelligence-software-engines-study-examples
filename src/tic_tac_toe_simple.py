@@ -2,8 +2,8 @@ from dataclasses import Field
 from enum import Enum
 from typing import Optional
 import copy
-from src.tree import TreeNode
 
+from src.game_state import IGameState, IHasEvaluableState, GameStatus
 
 #
 # Tic Tac Toe - simplified version
@@ -27,7 +27,7 @@ class Field(Enum):
 
         return ""
 
-    def opposite(self) -> Field:
+    def inverse(self) -> Field:
         if self == Field.CIRCLE:
             return Field.CROSS
         elif self == Field.CROSS:
@@ -50,7 +50,7 @@ class Field(Enum):
         return Field.CIRCLE
 
 
-class TicTacToeState:
+class TicTacToeState(IGameState, IHasEvaluableState):
     board: list[Optional[Field]] # Board of fields
     current: Field # Current player
 
@@ -62,13 +62,10 @@ class TicTacToeState:
         else:
             self.board = board
 
-    def __str__(self) -> str:
-        return str(self.board)
-
     def generate_possible_states(self) -> list['TicTacToeState']:
         states = []
 
-        opposite = self.current.opposite()
+        opposite = self.current.inverse()
 
         for i, field in enumerate(self.board):
             if field is None:
@@ -81,20 +78,103 @@ class TicTacToeState:
 
         return states
 
+    def get_status(self) -> GameStatus:
+        win_status = self._is_win()
+
+        # We won
+        if win_status:
+            return GameStatus.WIN
+        # Opponent won
+        elif not win_status and win_status is not None:
+            return GameStatus.DEFEAT
+        # None won and board is full - draw
+        elif win_status is None and self._is_board_full():
+            return GameStatus.DRAW
+        # None won and board is not full - the game is still running
+        else:
+            return GameStatus.RUNNING
+
+    def evaluate(self) -> float:
+        return 0 # TODO
+
+    def __str__(self) -> str:
+        return f"SCORE: {self.evaluate()} | STATUS: {self.get_status()} | BOARD: {str(self.board)}"
+
+    def _is_board_full(self) -> bool:
+        # Board has no None fields
+        return len([field for field in self.board if field is None]) == 0
+
+    def _is_win(self) -> Optional[bool]:
+        last_field = None
+        sequence_count = 1 # Default sequence number is 1
+
+        # Check whether there is sequence for winning
+        for field in self.board:
+            # If field is not defined, skip it
+            if field is None:
+                last_field = field
+                continue
+
+            # Sequence increase by one
+            if field == last_field:
+                sequence_count += 1
+            # Sequence interrupted, set current field and reset sequence count
+            else:
+                sequence_count = 1
+                last_field = field
+
+            if sequence_count >= SEQUENCE_COUNT_TO_WIN:
+                # Winner is determined whether me is the sequence field or not
+                return field == Field.me()
+
+        # Draw
+        return None
+
 
 if __name__ == "__main__":
     #
     # Example Usage
     #
 
-    # Start with me, empty board
-    root = TreeNode(TicTacToeState(Field.me(), None))
+    # Running
+    print("Running:")
+    running_state = TicTacToeState(Field.me(), None)
+    print(running_state)
 
-    # Generate possible states - with opponent
-    for state in root.state.generate_possible_states():
-        child = root.add_child(state)
+    # Cheated win
+    print("Cheated Win:")
+    cheated_winning_state = TicTacToeState(Field.me(), None)
+    for i in range(len(cheated_winning_state.board)):
+        cheated_winning_state.board[i] = Field.me()
+    print(cheated_winning_state)
 
-        for child_state in state.generate_possible_states():
-            child.add_child(child_state)
+    # Less Cheated win
+    print("Less Cheated Win:")
+    less_cheated_winning_state = TicTacToeState(Field.me(), None)
+    for i in range(SEQUENCE_COUNT_TO_WIN):
+        less_cheated_winning_state.board[i] = Field.me()
+    print(less_cheated_winning_state)
 
-    root.print_tree()
+    # Cheated defeat
+    print("Cheated Defeat:")
+    cheated_defeat_state = TicTacToeState(Field.me(), None)
+    for i in range(len(cheated_defeat_state.board)):
+        cheated_defeat_state.board[i] = Field.opponent()
+    print(cheated_defeat_state)
+
+    # Less Cheated defeat
+    print("Less Cheated Defeat:")
+    less_cheated_defeat_state = TicTacToeState(Field.me(), None)
+    for i in range(SEQUENCE_COUNT_TO_WIN):
+        less_cheated_defeat_state.board[i] = Field.opponent()
+    print(less_cheated_defeat_state)
+
+    # Draw
+    print("Draw:")
+    draw_state = TicTacToeState(Field.me(), None)
+    last_field = Field.me()
+    for i in range(len(draw_state.board)):
+        draw_state.board[i] = last_field
+        last_field = last_field.inverse()
+    print(draw_state)
+
