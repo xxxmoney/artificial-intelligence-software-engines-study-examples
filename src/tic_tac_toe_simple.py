@@ -1,5 +1,6 @@
 from dataclasses import Field
 from enum import Enum
+from functools import cache, cached_property
 from typing import Optional
 import copy
 
@@ -78,6 +79,8 @@ class TicTacToeState(IGameState, IHasEvaluableState):
 
         return states
 
+    # Cache because of multiple usages here
+    @cached_property
     def get_status(self) -> GameStatus:
         win_status = self._is_win()
 
@@ -95,10 +98,19 @@ class TicTacToeState(IGameState, IHasEvaluableState):
             return GameStatus.RUNNING
 
     def evaluate(self) -> float:
-        return 0 # TODO
+        if self.get_status == GameStatus.WIN:
+            return float('inf')
+        elif self.get_status == GameStatus.DEFEAT:
+            return float('-inf')
+        elif self.get_status == GameStatus.DRAW:
+            return 0
+
+        me_count = len([field for field in self.board if field == Field.me()])
+        opponent_count = len([field for field in self.board if field == Field.opponent()])
+        return me_count - opponent_count
 
     def __str__(self) -> str:
-        return f"SCORE: {self.evaluate()} | STATUS: {self.get_status()} | BOARD: {str(self.board)}"
+        return f"SCORE: {self.evaluate()} | STATUS: {self.get_status} | BOARD: {str(self.board)}"
 
     def _is_board_full(self) -> bool:
         # Board has no None fields

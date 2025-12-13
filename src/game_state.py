@@ -18,6 +18,7 @@ class IHasEvaluableState(ABC):
         pass
 
 class IGameState(ABC):
+    @property
     @abstractmethod
     def get_status(self) -> GameStatus:
         """ Get game status """
