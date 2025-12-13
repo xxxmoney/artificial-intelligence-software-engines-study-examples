@@ -28,3 +28,11 @@ class IGameState(ABC):
     def generate_possible_states(self) -> List['IGameState']:
         """ Get next possible game states """
         pass
+
+    def is_me(self) -> bool:
+        """ Whether the current player is me """
+        pass
+
+    def is_opponent(self) -> bool:
+        """ Whether the current player is opponent """
+        pass

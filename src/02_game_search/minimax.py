@@ -1,3 +1,4 @@
+from src.game_state import IGameState
 from src.tic_tac_toe_simple import TicTacToeState, Field
 from src.tree import TreeNode
 
@@ -13,12 +14,23 @@ from src.tree import TreeNode
 
 
 
+def minimax(state: IGameState, depth = 2):
+    raise NotImplementedError()
+
+
+def min():
+    raise NotImplementedError()
+
+
+def max():
+    raise NotImplementedError()
+
+
+
 if __name__ == "__main__":
     #
     # Example Usage
     #
-
-    # TODO: use MINIMAX
 
     # Start with me, empty board
     root = TreeNode(TicTacToeState(Field.me(), None))
