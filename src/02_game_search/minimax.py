@@ -36,6 +36,7 @@ def find_score(node: TreeNode[IGameState], depth) -> float:
 
         return node.score
 
+    # TODO: fix this, why do I need not?
     # We are playing this state, so we want to find max score
     if not node.state.is_me():
         node.score = find_max_score(node, depth - 1)
