@@ -78,6 +78,8 @@ if __name__ == "__main__":
     # Example Usage with simpler simple tick tack toe
     #
 
+    # TODO: make it possible to call minimax until completion, may need to implement logic of min max better and also to minimax, so the opponent can be played? I dunno now, figure this out, for now, this works on first step, yaaaay!
+
     # Start with me, empty board
     root = TreeNode(TicTacToeState(Field.me(), None))
 
