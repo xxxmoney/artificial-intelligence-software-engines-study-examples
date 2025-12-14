@@ -14,6 +14,8 @@ from src.tree import TreeNode
 
 
 def minimax(node: TreeNode[IGameState], depth: int = 5) -> float:
+    node.visits += 1
+
     # Either the game has finished or the max depth was reached
     if node.state.get_status != GameStatus.RUNNING or depth <= 0:
         if not isinstance(node.state, IHasEvaluableState):

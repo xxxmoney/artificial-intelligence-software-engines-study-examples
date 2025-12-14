@@ -41,7 +41,7 @@ class TreeNode(Generic[T]):
     def print_tree(self, level: int = 0):
         """ Visualizes the tree structure """
         indent = "    " * level
-        print(f"{indent} -> {self.state} (Score: {self.score})")
+        print(f"{indent} -> {self.state} (Score: {self.score}) (Visits: {self.visits})")
         for child in self.children:
             child.print_tree(level + 1)
 
