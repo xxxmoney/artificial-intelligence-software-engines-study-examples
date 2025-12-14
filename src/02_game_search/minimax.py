@@ -13,21 +13,7 @@ from src.tree import TreeNode
 #
 
 
-def minimax(node: TreeNode[IGameState], depth: int = 5) -> IGameState:
-    max_score = float('-inf')
-    best_state = None
-
-    for state in node.state.possible_states:
-        child_node = node.add_child(state)
-        child_node.score = find_score(child_node, depth)
-
-        if child_node.score > max_score:
-            max_score = child_node.score
-            best_state = state
-
-    return best_state
-
-def find_score(node: TreeNode[IGameState], depth) -> float:
+def minimax(node: TreeNode[IGameState], depth: int = 5) -> float:
     # Either the game has finished or the max depth was reached
     if node.state.get_status != GameStatus.RUNNING or depth <= 0:
         if not isinstance(node.state, IHasEvaluableState):
@@ -36,29 +22,31 @@ def find_score(node: TreeNode[IGameState], depth) -> float:
 
         return node.score
 
-    # TODO: fix this, why do I need not?
     # We are playing this state, so we want to find max score
     if not node.state.is_me():
         max_score = float('-inf')
 
-        for state in node.state.possible_states:
+        for state in node.state.possible_next_states:
             child_node = node.add_child(state)
+            child_node.score = minimax(child_node, depth - 1)
 
-            max_score = max(
-                max_score,
-                find_score(child_node, depth - 1)
-            )
+            if child_node.score > max_score:
+                max_score = child_node.score
+                node.best_child = child_node
+                node.score = child_node.score
+
     # Opponent is playing this state, and they want to find theirs max - so ours min
     else:
         min_score = float('inf')
 
-        for state in node.state.possible_states:
+        for state in node.state.possible_next_states:
             child_node = node.add_child(state)
+            child_node.score = minimax(child_node, depth - 1)
 
-            min_score = min(
-                min_score,
-                find_score(child_node, depth - 1)
-            )
+            if child_node.score < min_score:
+                min_score = child_node.score
+                node.best_child = child_node
+                node.score = child_node.score
 
     return node.score
 
@@ -68,13 +56,12 @@ if __name__ == "__main__":
     # Example Usage with simpler simple tick tack toe
     #
 
-    # TODO: make it possible to call minimax until completion, may need to implement logic of min max better and also to minimax, so the opponent can be played? I dunno now, figure this out, for now, this works on first step, yaaaay!
-
     # Start with me, empty board
     root = TreeNode(TicTacToeState(Field.me(), None))
 
     # Run minimax
-    best_state = minimax(root)
+    minimax(root)
+    best_state = root.best_child
 
     print(f"Best state:\n{best_state} \n\n")
     print("Tree:")

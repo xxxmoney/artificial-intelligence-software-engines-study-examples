@@ -64,7 +64,7 @@ class TicTacToeState(IGameState, IHasEvaluableState):
             self.board = board
 
     @cached_property
-    def possible_states(self) -> list['TicTacToeState']:
+    def possible_next_states(self) -> list['TicTacToeState']:
         states = []
 
         opposite = self.current.inverse()

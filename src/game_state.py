@@ -26,7 +26,7 @@ class IGameState(ABC):
 
     @property
     @abstractmethod
-    def possible_states(self) -> List['IGameState']:
+    def possible_next_states(self) -> List['IGameState']:
         """ Get next possible game states """
         pass
 

@@ -1,3 +1,4 @@
+from idlelib.tree import TreeNode
 from typing import Generic, TypeVar, List, Optional, Any
 
 T = TypeVar('T')
@@ -5,7 +6,7 @@ T = TypeVar('T')
 
 class TreeNode(Generic[T]):
     """
-    A generic Tree Node for game states.
+    A generic Tree Node for game states
     T: The type of the game state (e.g., board matrix, config dict)
     """
 
@@ -13,6 +14,7 @@ class TreeNode(Generic[T]):
         self.state = state
         self.parent = parent
         self.children: List['TreeNode'] = []
+        self.best_child: Optional[TreeNode] = None
 
         # Metadata for algorithms (Minimax/MCTS)
         self.score: float = 0.0
