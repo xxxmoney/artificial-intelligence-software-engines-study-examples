@@ -63,7 +63,8 @@ class TicTacToeState(IGameState, IHasEvaluableState):
         else:
             self.board = board
 
-    def generate_possible_states(self) -> list['TicTacToeState']:
+    @cached_property
+    def possible_states(self) -> list['TicTacToeState']:
         states = []
 
         opposite = self.current.inverse()
@@ -79,7 +80,6 @@ class TicTacToeState(IGameState, IHasEvaluableState):
 
         return states
 
-    # Cache because of multiple usages here
     @cached_property
     def get_status(self) -> GameStatus:
         win_status = self._is_win()

@@ -17,7 +17,7 @@ def minimax(node: TreeNode[IGameState], depth: int = 5) -> IGameState:
     max_score = float('-inf')
     best_state = None
 
-    for state in node.state.generate_possible_states():
+    for state in node.state.possible_states:
         child_node = node.add_child(state)
         child_node.score = find_score(child_node, depth)
 
@@ -39,39 +39,28 @@ def find_score(node: TreeNode[IGameState], depth) -> float:
     # TODO: fix this, why do I need not?
     # We are playing this state, so we want to find max score
     if not node.state.is_me():
-        node.score = find_max_score(node, depth - 1)
+        max_score = float('-inf')
+
+        for state in node.state.possible_states:
+            child_node = node.add_child(state)
+
+            max_score = max(
+                max_score,
+                find_score(child_node, depth - 1)
+            )
     # Opponent is playing this state, and they want to find theirs max - so ours min
     else:
-        node.score = find_min_score(node, depth - 1)
+        min_score = float('inf')
+
+        for state in node.state.possible_states:
+            child_node = node.add_child(state)
+
+            min_score = min(
+                min_score,
+                find_score(child_node, depth - 1)
+            )
 
     return node.score
-
-def find_max_score(node: TreeNode[IGameState], depth) -> float:
-    max_score = float('-inf')
-
-    for state in node.state.generate_possible_states():
-        child_node = node.add_child(state)
-
-        max_score = max(
-            max_score,
-            find_score(child_node, depth - 1)
-        )
-
-    return max_score
-
-def find_min_score(node: TreeNode[IGameState], depth) -> float:
-    min_score = float('inf')
-
-    for state in node.state.generate_possible_states():
-        child_node = node.add_child(state)
-
-        min_score = min(
-            min_score,
-            find_score(child_node, depth - 1)
-        )
-
-    return min_score
-
 
 
 if __name__ == "__main__":

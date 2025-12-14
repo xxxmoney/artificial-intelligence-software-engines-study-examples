@@ -24,8 +24,9 @@ class IGameState(ABC):
         """ Get game status """
         pass
 
+    @property
     @abstractmethod
-    def generate_possible_states(self) -> List['IGameState']:
+    def possible_states(self) -> List['IGameState']:
         """ Get next possible game states """
         pass
 
