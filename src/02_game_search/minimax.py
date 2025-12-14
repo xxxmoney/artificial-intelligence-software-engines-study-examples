@@ -23,7 +23,7 @@ def minimax(node: TreeNode[IGameState], depth: int = 5) -> float:
         return node.score
 
     # We are playing this state, so we want to find max score
-    if not node.state.is_me():
+    if node.state.is_me():
         max_score = float('-inf')
 
         for state in node.state.possible_next_states:
