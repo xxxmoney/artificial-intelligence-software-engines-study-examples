@@ -93,7 +93,7 @@ if __name__ == "__main__":
     root = TreeNode(TicTacToeState(Field.me(), None))
 
     # MCTS builds the tree and sets the score (wins) and visits
-    best_state = mcts(root, 1)
+    best_state = mcts(root, 500)
 
     print(f"Best state:\n{best_state} \n\n")
     print("Tree:")
