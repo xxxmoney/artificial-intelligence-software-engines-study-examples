@@ -74,6 +74,7 @@ def choose_node(nodes: list[TreeNode[IGameState]]) -> TreeNode[IGameState]:
     # We want to use the one with max UCT
     return max(nodes, key=get_uct_score)
 
+# TODO: add maximizing based on who is playing
 def get_uct_score(child: TreeNode[IGameState]) -> float:
     # How good is this state (turn)? - goes towards successful ones (we want winning ones)
     exploitation = child.score_visits_ratio
