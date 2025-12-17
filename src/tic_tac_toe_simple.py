@@ -67,21 +67,23 @@ class TicTacToeState(IGameState, IHasEvaluableState):
     def possible_next_states(self) -> list['TicTacToeState']:
         states = []
 
-        opposite = self.current.inverse()
+        # Only check for next states if game is still running
+        if self.status == GameStatus.RUNNING:
+            opposite = self.current.inverse()
 
-        for i, field in enumerate(self.board):
-            if field is None:
-                # Set opponent move to this field
-                board_copy = copy.deepcopy(self.board)
-                board_copy[i] = opposite
+            for i, field in enumerate(self.board):
+                if field is None:
+                    # Set opponent move to this field
+                    board_copy = copy.deepcopy(self.board)
+                    board_copy[i] = opposite
 
-                # Append state with the board copy as opposite player
-                states.append(TicTacToeState(opposite, board_copy))
+                    # Append state with the board copy as opposite player
+                    states.append(TicTacToeState(opposite, board_copy))
 
         return states
 
     @cached_property
-    def get_status(self) -> GameStatus:
+    def status(self) -> GameStatus:
         win_status = self._is_win()
 
         # We won
@@ -98,11 +100,11 @@ class TicTacToeState(IGameState, IHasEvaluableState):
             return GameStatus.RUNNING
 
     def evaluate(self) -> float:
-        if self.get_status == GameStatus.WIN:
+        if self.status == GameStatus.WIN:
             return float('inf')
-        elif self.get_status == GameStatus.DEFEAT:
+        elif self.status == GameStatus.DEFEAT:
             return float('-inf')
-        elif self.get_status == GameStatus.DRAW:
+        elif self.status == GameStatus.DRAW:
             return 0
 
         me_count = len([field for field in self.board if field == Field.me()])
@@ -110,7 +112,7 @@ class TicTacToeState(IGameState, IHasEvaluableState):
         return me_count - opponent_count
 
     def __str__(self) -> str:
-        return f"EVALUATION: {self.evaluate()} | STATUS: {self.get_status} | BOARD: {str(self.board)}"
+        return f"EVALUATION: {self.evaluate()} | STATUS: {self.status} | BOARD: {str(self.board)}"
 
     def _is_board_full(self) -> bool:
         # Board has no None fields

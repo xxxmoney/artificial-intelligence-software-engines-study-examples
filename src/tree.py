@@ -20,6 +20,10 @@ class TreeNode(Generic[T]):
         self.score: float = 0.0
         self.visits: int = 0
 
+    @property
+    def score_visits_ratio(self) -> float:
+        return 0 if not self.visits else self.score / self.visits
+
     def add_child(self, state: T) -> 'TreeNode':
         """ Creates and appends a child node with the given state """
         child = TreeNode(state, parent=self)
