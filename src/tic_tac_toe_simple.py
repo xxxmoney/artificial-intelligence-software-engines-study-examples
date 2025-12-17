@@ -112,7 +112,11 @@ class TicTacToeState(IGameState, IHasEvaluableState):
         return me_count - opponent_count
 
     def __str__(self) -> str:
-        return f"EVALUATION: {self.evaluate()} | STATUS: {self.status} | BOARD: {str(self.board)}"
+        return f"(Evaluations: {self.evaluate()}) | (Status: {self.status}) | (Current: {self.current}) | (Board: {self._formatted_board})"
+
+    @property
+    def _formatted_board(self) -> str:
+        return "[" + ", ".join([str(item) for item in self.board]) + "]"
 
     def _is_board_full(self) -> bool:
         # Board has no None fields
