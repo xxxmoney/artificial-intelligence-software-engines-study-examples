@@ -1,3 +1,4 @@
+import math
 import random
 
 from src.game_state import IGameState, GameStatus
@@ -11,7 +12,17 @@ from src.tree import TreeNode
 # This algorithm plays thousands and thousands of pseudo-random games, until the finish - so either win/defeat games
 # For each state, it remembers the number of play-thorughs and the number of wins of its descendants
 # It then uses statistics to choose the one with the most likelyhood
+# An important part of the MCTS is UCT - this is an algorithm choosed for choosing which child node to explore
+# UCT is basically in simple terms - while I want to prefer winning nodes, I also want to try explore unexplored nodes
+# UCT uses two parts - exploitation (tendency to choose the winning nodes) and exploration (tendency to choose the unknown nodes)
+# Balance between these two is maintained by the EXPLORATION_CONSTANT - this says how much we want to try and explore unknown nodes
 #
+
+# Sets how much we want try try exploring new nodes
+# Lower values (less then 0.5) - really focused more towards the "sure way" - not trying new ways much
+# Higher values (more then 2) - really trying out new ways even though they could fail
+# Middle ground (around 1.414) - one-armed bandit - a compromise
+EXPLORATION_CONSTANT = 1.414
 
 def mcts(node: TreeNode[IGameState], try_count: int) -> TreeNode[IGameState]:
     for i in range(try_count):
@@ -53,35 +64,30 @@ def explore_path(node: TreeNode[IGameState]) -> int:
 
     return score
 
+def choose_node(nodes: list[TreeNode[IGameState]]) -> TreeNode[IGameState]:
+    not_visited_nodes = [node for node in nodes if node.visits == 0]
+
+    # We want to try not visited at least once
+    if not_visited_nodes:
+        return random.choice(not_visited_nodes)
+
+    # We want to use the one with max UCT
+    return max(nodes, key=get_uct_score)
+
+def get_uct_score(child: TreeNode[IGameState]) -> float:
+    # How good is this state (turn)? - goes towards successful ones (we want winning ones)
+    exploitation = child.score_visits_ratio
+
+    # How few times have we been here? - goes towards lower explored ones (we want to try unexplored ones)
+    exploration = EXPLORATION_CONSTANT * math.sqrt(math.log(child.parent.visits) / child.visits)
+
+    # Combination of both - while we want to have successful ones, we also want to try unexplored ones
+    return exploitation + exploration
+
 def check_children(node: TreeNode[IGameState]) -> None:
     if not node.children:
         for state in node.state.possible_next_states:
             node.add_child(state)
-
-def choose_node(nodes: list[TreeNode[IGameState]]) -> TreeNode[IGameState]:
-    # Get not visited states
-    selected_nodes = [node for node in nodes if not node.visits]
-
-    # If all nodes were visited, we will choose from the visited
-    if not selected_nodes:
-        selected_nodes = nodes
-
-    # Firstly prefer winning node
-    win_node = next((node for node in selected_nodes if node.state == GameStatus.WIN), None)
-    if win_node:
-        return win_node
-
-    # If there is no winning node, then try draw
-    draw_node = next((node for node in selected_nodes if node.state == GameStatus.DRAW), None)
-    if draw_node:
-        return draw_node
-
-    # If none is winning
-    defeat_node = next((node for node in selected_nodes if node.state == GameStatus.DEFEAT), None)
-    if defeat_node:
-        return defeat_node
-
-    return random.choice(selected_nodes)
 
 
 if __name__ == "__main__":
