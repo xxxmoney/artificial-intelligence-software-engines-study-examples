@@ -79,7 +79,7 @@ def get_uct_score(child: TreeNode[IGameState], maximizing_exploitation: bool = T
     exploitation = child.score_visits_ratio
 
     # use negative exploitation on not maximizing (for example when enemy is playing - they are minimizing our score)
-    if maximizing_exploitation:
+    if not maximizing_exploitation:
         exploitation = -exploitation
 
     # How few times have we been here? - goes towards lower explored ones (we want to try unexplored ones)
