@@ -71,13 +71,16 @@ def choose_node(nodes: list[TreeNode[IGameState]]) -> TreeNode[IGameState]:
     if not_visited_nodes:
         return random.choice(not_visited_nodes)
 
-    # We want to use the one with max UCT
-    return max(nodes, key=get_uct_score)
+    # We want to use the one with max UCT (is we are playing, we are maximizing, otherwise its minimizing - because enemy is maximizing)
+    return max(nodes, key=lambda child: get_uct_score(child, child.parent.state.is_me()))
 
-# TODO: add maximizing based on who is playing
-def get_uct_score(child: TreeNode[IGameState]) -> float:
+def get_uct_score(child: TreeNode[IGameState], maximizing_exploitation: bool = True) -> float:
     # How good is this state (turn)? - goes towards successful ones (we want winning ones)
     exploitation = child.score_visits_ratio
+
+    # use negative exploitation on not maximizing (for example when enemy is playing - they are minimizing our score)
+    if maximizing_exploitation:
+        exploitation = -exploitation
 
     # How few times have we been here? - goes towards lower explored ones (we want to try unexplored ones)
     exploration = EXPLORATION_CONSTANT * math.sqrt(math.log(child.parent.visits) / child.visits)
