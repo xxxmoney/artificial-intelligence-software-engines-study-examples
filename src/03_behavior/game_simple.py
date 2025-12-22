@@ -81,7 +81,6 @@ class GameSimple:
         print("[Reloading]")
 
         self.ammunition = MAX_AMMUNITION
-        self.cancel_block()
 
     def has_enough_health(self):
         print("Checking if has enough health")

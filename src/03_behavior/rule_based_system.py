@@ -4,7 +4,7 @@
 # Great disadvantage is the repetition of same conditions across multiple if statements, along with not memory of previous state
 #
 
-from game_simple import GameSimple, Weapon
+from game_simple import GameSimple
 
 class RBS:
     game: GameSimple
