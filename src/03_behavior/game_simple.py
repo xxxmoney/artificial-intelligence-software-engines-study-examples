@@ -10,7 +10,7 @@ MAX_AMMUNITION = 5
 AMMUNITION_STEP = 1
 
 class Weapon(Enum):
-    Pistol = 0
+    PISTOL = 0
 
 class Enemy:
     health: int
@@ -36,7 +36,7 @@ class GameSimple:
         self.ammunition = MAX_AMMUNITION
         self.distant_enemy = Enemy()
         self.close_enemy = None
-        self.weapon = Weapon.Pistol
+        self.weapon = Weapon.PISTOL
 
     def engage_enemy(self):
         print("[Engaging new enemy]")
