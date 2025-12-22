@@ -74,3 +74,8 @@ class Action(Node):
             return Status.SUCCESS
         except:
             return Status.FAILURE
+
+if __name__ == "__main__":
+    game = GameSimple()
+
+    # TODO: use behavior tree for the game
