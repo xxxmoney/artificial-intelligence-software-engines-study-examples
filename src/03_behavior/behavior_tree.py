@@ -15,8 +15,8 @@ from typing import Callable
 from game_simple import GameSimple
 
 class Status(Enum):
-    SUCCESS = 0,
-    FAILURE = 1,
+    SUCCESS = 0
+    FAILURE = 1
     RUNNING = 2
 
 class Node:

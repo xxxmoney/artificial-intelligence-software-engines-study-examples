@@ -9,9 +9,9 @@ from enum import Enum
 from game_simple import GameSimple
 
 class GameSimpleState(Enum):
-    DEFAULT = 0,
-    ENGAGING = 1,
-    HEALING = 2,
+    DEFAULT = 0
+    ENGAGING = 1
+    HEALING = 2
     RELOADING = 3
 
 class FSM:
