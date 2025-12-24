@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional
 
 MAX_HEALTH = 100
-MIN_SAFE_HEALTH = 20
+MIN_SAFE_HEALTH = 50
 HEAL_STEP = 5
 ATTACK_POWER = 10
 MAX_AMMUNITION = 5
@@ -86,6 +86,11 @@ class GameSimple:
         print("Checking if has enough health")
 
         return self.health >= MIN_SAFE_HEALTH
+
+    def has_full_health(self):
+        print("Checking if has full health")
+
+        return self.health >= MAX_HEALTH
 
     def has_enough_ammunition(self):
         print("Checking if has enough ammunition")

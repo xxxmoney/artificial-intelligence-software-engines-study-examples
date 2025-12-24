@@ -27,7 +27,7 @@ class Selector(Node):
     children: list[Node]
 
     def __init__(self, children: list[Node]):
-        self.children = []
+        self.children = children
 #
     def tick(self, game: GameSimple):
         # Checks for the first child that is not FAILURE
@@ -77,5 +77,52 @@ class Action(Node):
 
 if __name__ == "__main__":
     game = GameSimple()
+    br = Selector([
+        # Cancel engaging
+        Sequence([
+            Condition(lambda g: not g.has_enough_health()),
+            Condition(lambda g: g.close_enemy),
+            Action(lambda g: g.cancel_engage_enemy()),
+        ]),
 
-    # TODO: use behavior tree for the game
+        # Engage
+        Sequence([
+            Condition(lambda g: g.has_full_health()),
+            Condition(lambda g: not g.close_enemy),
+            Action(lambda g: g.engage_enemy()),
+        ]),
+
+        # Heal
+        Sequence([
+            Condition(lambda g: not g.has_full_health()),
+            Condition(lambda g: not g.close_enemy),
+            Action(lambda g: g.heal()),
+        ]),
+
+        # Block
+        Sequence([
+            Condition(lambda g: not g.has_enough_ammunition()),
+            Condition(lambda g: not g.is_blocking),
+            Action(lambda g: g.block()),
+        ]),
+
+        # Reload
+        Sequence([
+            Condition(lambda g: g.is_blocking),
+            Action(lambda g: g.reload()),
+            Action(lambda g: g.cancel_block()),
+        ]),
+
+        # Attack
+        Sequence([
+            Condition(lambda g: g.close_enemy),
+            Action(lambda g: g.attack()),
+        ]),
+    ])
+
+    play_game_for_ticks = 100
+
+    # Play a game for a while
+    for _ in range(play_game_for_ticks):
+        game.tick()
+        br.tick(game)
