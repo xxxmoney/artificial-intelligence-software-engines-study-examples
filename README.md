@@ -14,5 +14,5 @@
     - 01_number_representation - issues with representing very precise numbers using floating point - IEEE 754
     - 02_game_search - how is the game (its states and moves) represented and what algorithms are there to go through it
     - 03_behavior - how the NPC behavior is made - how to define rules for NPC to react to certain circumstances
-    - 04_neural_network - how neural networks work and can be used to creating complex NPC/game-decision behavior
+    - 04_neural_network - how neural networks (comprised of interconnected neurons) work and can be used to creating complex NPC/game-decision behavior
 
