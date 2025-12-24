@@ -73,6 +73,9 @@ class Neuron(ABC):
 
         print(f"Training complete")
 
+    def __str__(self) -> str:
+        return f"Perceptron: weights: {self.weights}, bias: {self.bias}"
+
 
 # Perceptron is a neuron which is alone and uses step function - 0 or 1
 class Perceptron(Neuron):
@@ -105,6 +108,10 @@ if __name__ == "__main__":
     ]
     perceptron = Perceptron(3)
 
+    # Info of neuron before training:
+    print("[Perceptron before training]")
+    print(perceptron)
+
     # Try default random weights on some cases:
     print("[Testing random perceptron]")
     print("0 money, 0 time, 0 nice movie: ", perceptron.think([0, 0, 0]))
@@ -130,3 +137,6 @@ if __name__ == "__main__":
     print("1 money, 0 time, 1 nice movie: ", perceptron.think([1, 0, 1]))
     print("1 money, 1 time, 1 nice movie: ", perceptron.think([1, 1, 1]))
 
+    # Final info of neuron after training:
+    print("[Perceptron after training]")
+    print(perceptron)
