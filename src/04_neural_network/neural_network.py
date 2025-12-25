@@ -146,7 +146,7 @@ class NeuralNetwork:
         return current_inputs
 
     def train(self, training_data: list[TrainingDataItem], iteration_count: int) -> None:
-        print(f"[Start of training]")
+        print(f"[Network before training]")
         print(self)
 
         print(f"[Untrained inputs and outputs]")
@@ -157,16 +157,15 @@ class NeuralNetwork:
             item = random.choice(training_data)
             self.train_item(item)
 
-        print("\n\n")
+        print("\n")
 
-
-        print(f"[End of training]")
+        print(f"[Network after training]")
         print(self)
 
         print(f"[Trained inputs and outputs]")
         for item in training_data:
             print(f"Inputs: {item.inputs}, Outputs: {self.think(item.inputs)}, Expected Outputs: {item.targets}")
-        print("\n\n")
+        print("\n")
 
     def train_item(self, item: TrainingDataItem) -> None:
         # Let all inputs think - to set initial values
@@ -191,58 +190,23 @@ class NeuralNetwork:
                 neuron.update_weights()
 
     def __str__(self) -> str:
-        return "\n--------\n".join(["\n".join([neuron.__str__() for neuron in layer]) for layer in self.layers])
+        return f"\n{"".ljust(250, "-")}\n".join(["\n".join([neuron.__str__() for neuron in layer]) for layer in self.layers])
 
 if __name__ == "__main__":
     def train(network: NeuralNetwork, training_data: list[TrainingDataItem], iteration_count: int) -> None:
-        # Info of neuron before training:
-        print("[Network before training]")
-        print(network)
-        print("\n\n")
-
-        # Try default random weights on some cases:
-        print("[Testing random network]")
-        print("0 money, 0 time, 0 nice movie: ", network.think([0, 0, 0]))
-        print("0 money, 1 time, 0 nice movie: ", network.think([0, 1, 0]))
-        print("1 money, 0 time, 0 nice movie: ", network.think([1, 0, 0]))
-        print("1 money, 1 time, 0 nice movie: ", network.think([1, 1, 0]))
-        print("0 money, 0 time, 1 nice movie: ", network.think([0, 0, 1]))
-        print("0 money, 1 time, 1 nice movie: ", network.think([0, 1, 1]))
-        print("1 money, 0 time, 1 nice movie: ", network.think([1, 0, 1]))
-        print("1 money, 1 time, 1 nice movie: ", network.think([1, 1, 1]))
-        print("\n\n")
-
-        print(f"[Training network for {iteration_count} iterations]")
+        print(f"[[Network will be trained for {iteration_count} iterations:]]")
         print("\n")
         network.train(training_data, iteration_count)
-        print("\n\n")
-
-        # Try trained weights on some cases:
-        print(f"[Testing trained network for {iteration_count} iterations]")
-        print("0 money, 0 time, 0 nice movie: ", network.think([0, 0, 0]))
-        print("0 money, 1 time, 0 nice movie: ", network.think([0, 1, 0]))
-        print("1 money, 0 time, 0 nice movie: ", network.think([1, 0, 0]))
-        print("1 money, 1 time, 0 nice movie: ", network.think([1, 1, 0]))
-        print("0 money, 0 time, 1 nice movie: ", network.think([0, 0, 1]))
-        print("0 money, 1 time, 1 nice movie: ", network.think([0, 1, 1]))
-        print("1 money, 0 time, 1 nice movie: ", network.think([1, 0, 1]))
-        print("1 money, 1 time, 1 nice movie: ", network.think([1, 1, 1]))
-        print("\n\n")
-
-        # Final info of neuron after training:
-        print("[Network after training]")
-        print(network)
-        print("\n\n")
-
-
+        print("\n")
 
     # Simple example
     # Inputs:
     # - 1: Do I have money (0,1)
     # - 2: Do I have time (0,1)
     # - 3: Is the movie great? (0,1)
-
-    # Simple example: we care only about input 1 and 2, the third one is irrelevant (we only want to go to the movie if I have money and time - if the movie is nice is irrelevant)
+    # We care only about input 1 and 2, the third one is irrelevant (we only want to go to the movie if I have money and time - if the movie is nice is irrelevant)
+    print("[[[Example 01:]]]")
+    print("\n")
     training_data = [
         TrainingDataItem([0, 0, 0], [0]),  # No money, no time, no movie -> not going
         TrainingDataItem([0, 0, 1], [0]),  # No money, no time, nice movie -> not going
@@ -255,5 +219,6 @@ if __name__ == "__main__":
     ]
     network = NeuralNetwork([3, 2, 3, 1]) # Testing with some number of hidden layers (just random, no deeper meaning - just have to define "first layer" as three inputs and output as 1 output)
     train(network, training_data, 250000)
+
 
 
