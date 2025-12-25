@@ -14,6 +14,7 @@ from typing import Optional
 #   - the process start from the start - it gets input, goes through the network, and to the output (in our case 1 output neuron)
 #   - the error from the end has to go through the whole network - the backpropagation - each neuron has to adjust its own weights (thus why we need the delta calculation for each neuron)
 # We have an "orchestrator" for the neurons - the Neural Network
+# The overall neural network has benefits over single neuron - for example, neural network is capable of being trained to "think" about XOR operations (not possible with only singular neuron)
 #
 
 LEARNING_RATE = 0.01
