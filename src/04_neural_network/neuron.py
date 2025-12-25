@@ -95,7 +95,7 @@ class PerceptronNeuron(Neuron):
 
     def _derivative(self, value: float) -> float:
         # For perceptron, derivative is almost everywhere 0 - but for the formula to work, we use 1
-        return 1.0
+        return 1
 
 class SigmoidNeuron(Neuron):
     def _activate(self, value: float) -> float:
@@ -104,7 +104,7 @@ class SigmoidNeuron(Neuron):
         try:
             return 1 / (1 + math.exp(-value))
         except OverflowError:
-            return 0.0 if value < 0 else 1.0
+            return 0 if value < 0 else 1
 
     def _derivative(self, value: float) -> float:
         # Derivative of Sigmoid is: Sigmoid(x) * (1 - Sigmoid(x))
