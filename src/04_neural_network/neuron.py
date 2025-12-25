@@ -59,7 +59,7 @@ class Neuron(ABC):
         return self._activate(sum_value)
 
     def train(self, training_data: list[TrainingDataItem], iterations: int) -> None:
-        print(f"Training neuron with {len(self.weights)} inputs/weights with {iterations} iterations...")
+        print(f"Training {self.__class__.__name__} with {len(self.weights)} inputs/weights with {iterations} iterations...")
 
         for _ in range(iterations):
             for item in training_data:
