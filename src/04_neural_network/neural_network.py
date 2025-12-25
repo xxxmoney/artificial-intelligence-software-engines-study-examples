@@ -24,8 +24,6 @@ from typing import Optional
 # (does not change)  (Learns from next layer)  (learns from target)     (does not change)
 #
 
-LEARNING_RATE = 0.01
-
 @dataclass
 class TrainingDataItem:
     inputs: list[float]
@@ -87,14 +85,14 @@ class Neuron(ABC):
 
         return output
 
-    def update_weights(self):
+    def update_weights(self, learning_rate: float):
         # Adjust weights based on last delta
         for i in range(len(self.weights)):
-            change = self.last_inputs[i] * self.last_delta * LEARNING_RATE
+            change = self.last_inputs[i] * self.last_delta * learning_rate
             self.weights[i] += change
 
         # And also adjust bias
-        self.bias += self.last_delta * LEARNING_RATE
+        self.bias += self.last_delta * learning_rate
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}: weights: {self.weights}, bias: {self.bias}"
@@ -117,8 +115,9 @@ class SigmoidNeuron(Neuron):
 
 class NeuralNetwork:
     layers: list[list[Neuron]]
+    learning_rate: float
 
-    def __init__(self, layers_structure: list[int]):
+    def __init__(self, layers_structure: list[int], learning_rate: float):
         """
         Creates neural network based on given structure
         Example: [2, 2, 1]:
@@ -127,6 +126,7 @@ class NeuralNetwork:
         - 1 neuron in output layer
         """
         self.layers = []
+        self.learning_rate = learning_rate
 
         # Creating layers - starting from index 1 (first value is just number of inputs)
         for i in range(1, len(layers_structure)):
@@ -187,7 +187,7 @@ class NeuralNetwork:
         # Now we have calculated deltas for all neurons, we can update weights
         for layer in self.layers:
             for neuron in layer:
-                neuron.update_weights()
+                neuron.update_weights(self.learning_rate)
 
     def __str__(self) -> str:
         return f"\n{"".ljust(250, "-")}\n".join(["\n".join([neuron.__str__() for neuron in layer]) for layer in self.layers])
@@ -219,21 +219,23 @@ if __name__ == "__main__":
             TrainingDataItem([1, 1, 0], [1]),  # Has money, has time, no movie -> going
             TrainingDataItem([1, 1, 1], [1]),  # Has money, has time, nice movie -> going
         ]
-        network = NeuralNetwork([3, 2, 3,
-                                 1])  # Testing with some number of hidden layers (just random, no deeper meaning - just have to define "first layer" as three inputs and output as 1 output)
+        network = NeuralNetwork([3, 2, 3, 1], 0.01)  # Testing with some number of hidden layers (just random, no deeper meaning - just have to define "first layer" as three inputs and output as 1 output)
         train(network, training_data, 250000)
 
 
     def example_02():
         # Simple example 02 - XOR
         # XOR works as AND of OR and NAND (not AND) - in simpler terms, when the logical values are different, XOR is true - exclusive OR
+        # Funny thing about XOR is that it does not work with 1 neuron - meaning it needs network with at least 2 neurons in the hidden layer
         # Inputs:
         # - 1: Logical first - 0 or 1
         # - 2: Logical second - 0 or 1
         # Outputs:
         # - 1: Whether the XOR is true - 1 or false - 0 (basically an and)
 
-        print("[[[Example 02_01 - XOR]]]")
+        learning_rate = 0.5 # We can define a bit higher learning rate
+
+        print("[[[Example 02_01 - XOR - 1 neuron in hidden layer - won't work]]]")
         print("\n")
         training_data = [
             TrainingDataItem([0, 0], [0]),
@@ -241,9 +243,19 @@ if __name__ == "__main__":
             TrainingDataItem([1, 0], [1]),
             TrainingDataItem([1, 1], [0]),
         ]
-        network = NeuralNetwork([2, 1, 1])
-        train(network, training_data, 250000)
+        network = NeuralNetwork([2, 1, 1], learning_rate) # 2 inputs, 1 neuron in hidden layer, 1 output
+        train(network, training_data, 1000000) # Even with an extreme amount of iterations, network with just 1 neuron in hidden layer cannot do it
 
+        print("[[[Example 02_02 - XOR - 2 neurons in hidden layer - will work]]]")
+        print("\n")
+        training_data = [
+            TrainingDataItem([0, 0], [0]),
+            TrainingDataItem([0, 1], [1]),
+            TrainingDataItem([1, 0], [1]),
+            TrainingDataItem([1, 1], [0]),
+        ]
+        network = NeuralNetwork([2, 2, 1], learning_rate) # 2 inputs, 2 neurons in hidden layer, 1 output
+        train(network, training_data, 50000) # Voila - when we have 2 neurons in hidden layer, suddenly, the network is capable of learning the XOR
 
     # example_01()
     example_02()
