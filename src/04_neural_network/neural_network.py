@@ -15,6 +15,13 @@ from typing import Optional
 #   - the error from the end has to go through the whole network - the backpropagation - each neuron has to adjust its own weights (thus why we need the delta calculation for each neuron)
 # We have an "orchestrator" for the neurons - the Neural Network
 # The overall neural network has benefits over single neuron - for example, neural network is capable of being trained to "think" about XOR operations (not possible with only singular neuron)
+# Graphical representation:
+# DATA (Input)        HIDDEN LAYER/LAYERS           OUTPUT LAYER      TARGET
+#    [0.5] -----------> (Neuron/Neurons) -----------> (Neuron) ---------> [1.0]
+#      |                   |                     |
+#      |                   |                     |
+# (just number)     (has weights and bias)   (has weights and bias)     (just number)
+# (does not change)  (Learns from next layer)  (learns from target)     (does not change)
 #
 
 LEARNING_RATE = 0.01
