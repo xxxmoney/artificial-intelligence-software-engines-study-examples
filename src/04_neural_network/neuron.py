@@ -13,6 +13,9 @@ from abc import ABC, abstractmethod
 #   - Step - returns result 0 or 1 (0 is activated, 1 is not activated)
 #   - Sigmoid - returns result from 0 to 1 (uses scale from 0 to 1)
 #   - ReLu - returns result from 0 to infinity (uses scale from 0 to infinity)
+# How this works in training:
+# - For perceptron neuron, it learns only by the error rate - because the derivative is 0 (1 in out formula), it always "learn with the same rate"
+# - For sigmoid neuron, during the learning, the error is more or less dampened by how "sure" the neuron is (if its less sure, it can make greater adjustments to the weights, if its more "sure", its adjusting details - smaller changes to weights)
 #
 
 LEARNING_RATE = 0.01
