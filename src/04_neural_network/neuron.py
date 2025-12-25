@@ -1,3 +1,4 @@
+import math
 import random
 from abc import ABC, abstractmethod
 
@@ -36,6 +37,10 @@ class Neuron(ABC):
     def _activate(self, value: float) -> float:
         pass
 
+    @abstractmethod
+    def _derivative(self, value: float) -> float:
+        pass
+
     def think(self, inputs: list[float]) -> float:
         if len(inputs) != len(self.weights):
             raise ValueError(f"Number of inputs ({len(inputs)}) does not match number of weights ({len(self.weights)})")
@@ -60,10 +65,13 @@ class Neuron(ABC):
                 # Calculate error from desired target
                 error = item.target - prediction
 
+                # Calculate gradient from error used for delta
+                gradient = error * self._derivative(prediction)
+
                 # Calculate new weights using the error and the learning rate
                 new_weights = []
                 for i in range(len(self.weights)):
-                    delta = error * item.inputs[i] * LEARNING_RATE
+                    delta = gradient * item.inputs[i] * LEARNING_RATE
                     new_weights.append(self.weights[i] + delta)
 
                 self.weights = new_weights
@@ -78,24 +86,75 @@ class Neuron(ABC):
 
 
 # Perceptron is a neuron which is alone and uses step function - 0 or 1
-class Perceptron(Neuron):
+class PerceptronNeuron(Neuron):
     def __init__(self, num_inputs: int):
         super().__init__(num_inputs)
 
     def _activate(self, value: float) -> float:
         return 1 if value > 0 else 0
 
+    def _derivative(self, value: float) -> float:
+        # For perceptron, derivative is almost everywhere 0 - but for the formula to work, we use 1
+        return 1.0
+
+class SigmoidNeuron(Neuron):
+    def _activate(self, value: float) -> float:
+        # Sigmoid: 1 / (1 + e^-x)
+        # Handles overflow for very large negative numbers
+        try:
+            return 1 / (1 + math.exp(-value))
+        except OverflowError:
+            return 0 if value < 0 else 1
+
+    def _derivative(self, value: float) -> float:
+        # Derivative of Sigmoid is: Sigmoid(x) * (1 - Sigmoid(x))
+        # Since we already have the output (which IS Sigmoid(x)), it's very fast:
+        return value * (1 - value)
+
+
 
 if __name__ == "__main__":
-    # Simple example with perceptron usage
+    def train(neuron: Neuron, type: str, training_data: list[TrainingDataItem], training_iterations: int) -> None:
+        # Info of neuron before training:
+        print(f"[{type} before training]")
+        print(neuron)
+
+        # Try default random weights on some cases:
+        print(f"[Testing random {type}]")
+        print("0 money, 0 time, 0 nice movie: ", neuron.think([0, 0, 0]))
+        print("0 money, 1 time, 0 nice movie: ", neuron.think([0, 1, 0]))
+        print("1 money, 0 time, 0 nice movie: ", neuron.think([1, 0, 0]))
+        print("1 money, 1 time, 0 nice movie: ", neuron.think([1, 1, 0]))
+        print("0 money, 0 time, 1 nice movie: ", neuron.think([0, 0, 1]))
+        print("0 money, 1 time, 1 nice movie: ", neuron.think([0, 1, 1]))
+        print("1 money, 0 time, 1 nice movie: ", neuron.think([1, 0, 1]))
+        print("1 money, 1 time, 1 nice movie: ", neuron.think([1, 1, 1]))
+
+        print(f"[Training {type} for {training_iterations} iterations]")
+        neuron.train(training_data, training_iterations)
+
+        # Try trained weights on some cases:
+        print(f"[Testing trained {type} for {training_iterations} iterations]")
+        print("0 money, 0 time, 0 nice movie: ", neuron.think([0, 0, 0]))
+        print("0 money, 1 time, 0 nice movie: ", neuron.think([0, 1, 0]))
+        print("1 money, 0 time, 0 nice movie: ", neuron.think([1, 0, 0]))
+        print("1 money, 1 time, 0 nice movie: ", neuron.think([1, 1, 0]))
+        print("0 money, 0 time, 1 nice movie: ", neuron.think([0, 0, 1]))
+        print("0 money, 1 time, 1 nice movie: ", neuron.think([0, 1, 1]))
+        print("1 money, 0 time, 1 nice movie: ", neuron.think([1, 0, 1]))
+        print("1 money, 1 time, 1 nice movie: ", neuron.think([1, 1, 1]))
+
+        # Final info of neuron after training:
+        print(f"[{type} after training]")
+        print(neuron)
+
+    # Simple example
     # Inputs:
     # - 1: Do I have money (0,1)
     # - 2: Do I have time (0,1)
     # - 3: Is the movie great? (0,1)
 
-    # In this simple example, we are training the perceptron on this training data:
-    # - we care only about input 1 and 2, the third one is irrelevant (we only want to go to the movie if I have money and time - if the movie is nice is irrelevant)
-    training_iterations = 500
+    # Simple example: we care only about input 1 and 2, the third one is irrelevant (we only want to go to the movie if I have money and time - if the movie is nice is irrelevant)
     training_data = [
         TrainingDataItem([0, 0, 0], 0),  # No money, no time, no movie -> not going
         TrainingDataItem([0, 0, 1], 0),  # No money, no time, nice movie -> not going
@@ -106,37 +165,10 @@ if __name__ == "__main__":
         TrainingDataItem([1, 1, 0], 1),  # Has money, has time, no movie -> going
         TrainingDataItem([1, 1, 1], 1),  # Has money, has time, nice movie -> going
     ]
-    perceptron = Perceptron(3)
+    perceptron = PerceptronNeuron(3)
+    train(perceptron, "perceptron", training_data, 500)
 
-    # Info of neuron before training:
-    print("[Perceptron before training]")
-    print(perceptron)
+    sigmoid = SigmoidNeuron(3)
+    train(sigmoid, "sigmoid", training_data, 10000)
 
-    # Try default random weights on some cases:
-    print("[Testing random perceptron]")
-    print("0 money, 0 time, 0 nice movie: ", perceptron.think([0, 0, 0]))
-    print("0 money, 1 time, 0 nice movie: ", perceptron.think([0, 1, 0]))
-    print("1 money, 0 time, 0 nice movie: ", perceptron.think([1, 0, 0]))
-    print("1 money, 1 time, 0 nice movie: ", perceptron.think([1, 1, 0]))
-    print("0 money, 0 time, 1 nice movie: ", perceptron.think([0, 0, 1]))
-    print("0 money, 1 time, 1 nice movie: ", perceptron.think([0, 1, 1]))
-    print("1 money, 0 time, 1 nice movie: ", perceptron.think([1, 0, 1]))
-    print("1 money, 1 time, 1 nice movie: ", perceptron.think([1, 1, 1]))
 
-    print(f"[Training perceptron for {training_iterations} iterations]")
-    perceptron.train(training_data, training_iterations)
-
-    # Try trained weights on some cases:
-    print(f"[Testing trained perceptron for {training_iterations} iterations]")
-    print("0 money, 0 time, 0 nice movie: ", perceptron.think([0, 0, 0]))
-    print("0 money, 1 time, 0 nice movie: ", perceptron.think([0, 1, 0]))
-    print("1 money, 0 time, 0 nice movie: ", perceptron.think([1, 0, 0]))
-    print("1 money, 1 time, 0 nice movie: ", perceptron.think([1, 1, 0]))
-    print("0 money, 0 time, 1 nice movie: ", perceptron.think([0, 0, 1]))
-    print("0 money, 1 time, 1 nice movie: ", perceptron.think([0, 1, 1]))
-    print("1 money, 0 time, 1 nice movie: ", perceptron.think([1, 0, 1]))
-    print("1 money, 1 time, 1 nice movie: ", perceptron.think([1, 1, 1]))
-
-    # Final info of neuron after training:
-    print("[Perceptron after training]")
-    print(perceptron)
