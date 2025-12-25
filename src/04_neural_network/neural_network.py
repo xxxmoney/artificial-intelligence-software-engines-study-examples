@@ -199,26 +199,51 @@ if __name__ == "__main__":
         network.train(training_data, iteration_count)
         print("\n")
 
-    # Simple example
-    # Inputs:
-    # - 1: Do I have money (0,1)
-    # - 2: Do I have time (0,1)
-    # - 3: Is the movie great? (0,1)
-    # We care only about input 1 and 2, the third one is irrelevant (we only want to go to the movie if I have money and time - if the movie is nice is irrelevant)
-    print("[[[Example 01:]]]")
-    print("\n")
-    training_data = [
-        TrainingDataItem([0, 0, 0], [0]),  # No money, no time, no movie -> not going
-        TrainingDataItem([0, 0, 1], [0]),  # No money, no time, nice movie -> not going
-        TrainingDataItem([0, 1, 0], [0]),  # No money, has time, no movie -> not going
-        TrainingDataItem([0, 1, 1], [0]),  # No money, has time, nice movie -> not going
-        TrainingDataItem([1, 0, 0], [0]),  # Has money, no time, no movie -> not going
-        TrainingDataItem([1, 0, 1], [0]),  # Has money, no time, nice movie -> not going
-        TrainingDataItem([1, 1, 0], [1]),  # Has money, has time, no movie -> going
-        TrainingDataItem([1, 1, 1], [1]),  # Has money, has time, nice movie -> going
-    ]
-    network = NeuralNetwork([3, 2, 3, 1]) # Testing with some number of hidden layers (just random, no deeper meaning - just have to define "first layer" as three inputs and output as 1 output)
-    train(network, training_data, 250000)
+    def example_01():
+        # Simple example 01 - Movie
+        # Inputs:
+        # - 1: Do I have money (0,1)
+        # - 2: Do I have time (0,1)
+        # - 3: Is the movie great? (0,1)
+        # Outputs:
+        # - 1: whether we go to see the movie or not
+        print("[[[Example 01 - Movie]]]")
+        print("\n")
+        training_data = [
+            TrainingDataItem([0, 0, 0], [0]),  # No money, no time, no movie -> not going
+            TrainingDataItem([0, 0, 1], [0]),  # No money, no time, nice movie -> not going
+            TrainingDataItem([0, 1, 0], [0]),  # No money, has time, no movie -> not going
+            TrainingDataItem([0, 1, 1], [0]),  # No money, has time, nice movie -> not going
+            TrainingDataItem([1, 0, 0], [0]),  # Has money, no time, no movie -> not going
+            TrainingDataItem([1, 0, 1], [0]),  # Has money, no time, nice movie -> not going
+            TrainingDataItem([1, 1, 0], [1]),  # Has money, has time, no movie -> going
+            TrainingDataItem([1, 1, 1], [1]),  # Has money, has time, nice movie -> going
+        ]
+        network = NeuralNetwork([3, 2, 3,
+                                 1])  # Testing with some number of hidden layers (just random, no deeper meaning - just have to define "first layer" as three inputs and output as 1 output)
+        train(network, training_data, 250000)
 
 
+    def example_02():
+        # Simple example 02 - XOR
+        # XOR works as AND of OR and NAND (not AND) - in simpler terms, when the logical values are different, XOR is true - exclusive OR
+        # Inputs:
+        # - 1: Logical first - 0 or 1
+        # - 2: Logical second - 0 or 1
+        # Outputs:
+        # - 1: Whether the XOR is true - 1 or false - 0 (basically an and)
 
+        print("[[[Example 02_01 - XOR]]]")
+        print("\n")
+        training_data = [
+            TrainingDataItem([0, 0], [0]),
+            TrainingDataItem([0, 1], [1]),
+            TrainingDataItem([1, 0], [1]),
+            TrainingDataItem([1, 1], [0]),
+        ]
+        network = NeuralNetwork([2, 1, 1])
+        train(network, training_data, 250000)
+
+
+    # example_01()
+    example_02()
