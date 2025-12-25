@@ -243,7 +243,7 @@ if __name__ == "__main__":
         TrainingDataItem([1, 1, 0], [1]),  # Has money, has time, no movie -> going
         TrainingDataItem([1, 1, 1], [1]),  # Has money, has time, nice movie -> going
     ]
-    perceptron = NeuralNetwork([3, 2, 3, 1]) # Testing with some number of hidden layers (just random, no deeper meaning - just have to define "first layer" as three inputs and output as 1 output)
-    train(perceptron, training_data, 250000)
+    network = NeuralNetwork([3, 2, 3, 1]) # Testing with some number of hidden layers (just random, no deeper meaning - just have to define "first layer" as three inputs and output as 1 output)
+    train(network, training_data, 250000)
 
 
