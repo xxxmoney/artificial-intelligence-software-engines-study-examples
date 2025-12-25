@@ -85,7 +85,7 @@ class Neuron(ABC):
         print(f"Training complete")
 
     def __str__(self) -> str:
-        return f"Perceptron: weights: {self.weights}, bias: {self.bias}"
+        return f"{self.__class__.__name__}: weights: {self.weights}, bias: {self.bias}"
 
 
 # Perceptron is a neuron which is alone and uses step function - 0 or 1
