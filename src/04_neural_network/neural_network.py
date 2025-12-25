@@ -146,10 +146,10 @@ class NeuralNetwork:
         return current_inputs
 
     def train(self, training_data: list[TrainingDataItem], iteration_count: int) -> None:
-        print(f"Training neural network:")
+        print(f"[Start of training]")
         print(self)
 
-        print(f"Untrained inputs and outputs:")
+        print(f"[Untrained inputs and outputs]")
         for item in training_data:
             print(f"Inputs: {item.inputs}, Outputs: {self.think(item.inputs)}, Expected Outputs: {item.targets}")
 
@@ -157,12 +157,16 @@ class NeuralNetwork:
             item = random.choice(training_data)
             self.train_item(item)
 
-        print(f"Trained neural network:")
+        print("\n\n")
+
+
+        print(f"[End of training]")
         print(self)
 
-        print(f"Trained inputs and outputs:")
+        print(f"[Trained inputs and outputs]")
         for item in training_data:
             print(f"Inputs: {item.inputs}, Outputs: {self.think(item.inputs)}, Expected Outputs: {item.targets}")
+        print("\n\n")
 
     def train_item(self, item: TrainingDataItem) -> None:
         # Let all inputs think - to set initial values
@@ -194,6 +198,7 @@ if __name__ == "__main__":
         # Info of neuron before training:
         print("[Network before training]")
         print(network)
+        print("\n\n")
 
         # Try default random weights on some cases:
         print("[Testing random network]")
@@ -205,9 +210,12 @@ if __name__ == "__main__":
         print("0 money, 1 time, 1 nice movie: ", network.think([0, 1, 1]))
         print("1 money, 0 time, 1 nice movie: ", network.think([1, 0, 1]))
         print("1 money, 1 time, 1 nice movie: ", network.think([1, 1, 1]))
+        print("\n\n")
 
         print(f"[Training network for {iteration_count} iterations]")
+        print("\n")
         network.train(training_data, iteration_count)
+        print("\n\n")
 
         # Try trained weights on some cases:
         print(f"[Testing trained network for {iteration_count} iterations]")
@@ -219,10 +227,12 @@ if __name__ == "__main__":
         print("0 money, 1 time, 1 nice movie: ", network.think([0, 1, 1]))
         print("1 money, 0 time, 1 nice movie: ", network.think([1, 0, 1]))
         print("1 money, 1 time, 1 nice movie: ", network.think([1, 1, 1]))
+        print("\n\n")
 
         # Final info of neuron after training:
         print("[Network after training]")
         print(network)
+        print("\n\n")
 
 
 
