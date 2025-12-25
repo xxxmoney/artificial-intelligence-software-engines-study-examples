@@ -104,7 +104,7 @@ class SigmoidNeuron(Neuron):
         try:
             return 1 / (1 + math.exp(-value))
         except OverflowError:
-            return 0 if value < 0 else 1
+            return 0.0 if value < 0 else 1.0
 
     def _derivative(self, value: float) -> float:
         # Derivative of Sigmoid is: Sigmoid(x) * (1 - Sigmoid(x))
