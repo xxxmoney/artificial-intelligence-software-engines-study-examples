@@ -255,7 +255,7 @@ if __name__ == "__main__":
             TrainingDataItem([1, 1], [0]),
         ]
         network = NeuralNetwork([2, 2, 1], learning_rate) # 2 inputs, 2 neurons in hidden layer, 1 output
-        train(network, training_data, 50000) # Voila - when we have 2 neurons in hidden layer, suddenly, the network is capable of learning the XOR
+        train(network, training_data, 500000) # Voila - when we have 2 neurons in hidden layer, suddenly, the network is capable of learning the XOR
 
     # example_01()
     example_02()
