@@ -257,5 +257,107 @@ if __name__ == "__main__":
         network = NeuralNetwork([2, 2, 1], learning_rate) # 2 inputs, 2 neurons in hidden layer, 1 output
         train(network, training_data, 500000) # Voila - when we have 2 neurons in hidden layer, suddenly, the network is capable of learning the XOR
 
+
+    def example_03():
+        # Simple example 01 - Clothing
+        # I necessary have to have left and right boot on, otherwise I cant go outside, otherwise, when its cold, I should have pants, jacket and cap on, if its dazzling, I should have glasses on
+        # Inputs:
+        # - 1: Do I have left boot on?
+        # - 2: Do I have right boot on?
+        # - 3: Do I have pants on?
+        # - 4: Do I have cap oo?
+        # - 5: Do I have glasses on?
+        # - 6: Do I have jacket on?
+        # - 7: Is it cold outside?
+        # - 8: Is it hot outside?
+        # - 9: Is it dazzling outside?
+        # Outputs:
+        # - 1: Whether I can go out or not
+        print("[[[Example 03 - Clothing]]]")
+        print("\n")
+
+        # Logic:
+        # 0:L_Boot, 1:R_Boot, 2:Pants, 3:Cap, 4:Glasses, 5:Jacket, 6:Cold, 7:Hot, 8:Dazzling
+        # Rules:
+        # - Must have L_Boot(0) & R_Boot(1)
+        # - If Cold(6): Must have Pants(2) & Cap(3) & Jacket(5)
+        # - If Dazzling(8): Must have Glasses(4)
+        training_data = [
+            # --- Basic Failures (Missing Boots) ---
+            TrainingDataItem([0, 1, 1, 1, 1, 1, 0, 0, 0], [0]),  # Missing Left Boot
+            TrainingDataItem([1, 0, 1, 1, 1, 1, 0, 0, 0], [0]),  # Missing Right Boot
+            TrainingDataItem([0, 0, 1, 1, 1, 1, 1, 0, 1], [0]),  # Missing Both Boots
+            TrainingDataItem([0, 1, 0, 0, 0, 0, 1, 0, 0], [0]),  # Missing L Boot (Cold)
+            TrainingDataItem([1, 0, 0, 0, 1, 0, 0, 0, 1], [0]),  # Missing R Boot (Dazzle)
+
+            # --- Cold Failures (Have Boots + Cold, Missing Gear) ---
+            TrainingDataItem([1, 1, 0, 1, 0, 1, 1, 0, 0], [0]),  # Cold, No Pants
+            TrainingDataItem([1, 1, 1, 0, 0, 1, 1, 0, 0], [0]),  # Cold, No Cap
+            TrainingDataItem([1, 1, 1, 1, 0, 0, 1, 0, 0], [0]),  # Cold, No Jacket
+            TrainingDataItem([1, 1, 0, 0, 0, 0, 1, 0, 0], [0]),  # Cold, Nothing on
+            TrainingDataItem([1, 1, 1, 1, 1, 0, 1, 0, 1], [0]),  # Cold+Dazzle, No Jacket
+
+            # --- Dazzle Failures (Have Boots + Dazzle, Missing Glasses) ---
+            TrainingDataItem([1, 1, 1, 1, 0, 1, 0, 0, 1], [0]),  # Dazzle, No Glasses
+            TrainingDataItem([1, 1, 0, 0, 0, 0, 0, 1, 1], [0]),  # Dazzle+Hot, No Glasses
+            TrainingDataItem([1, 1, 1, 1, 0, 1, 1, 0, 1], [0]),  # Cold+Dazzle, No Glasses (Gear OK)
+
+            # --- Success Cases (Neutral Weather) ---
+            TrainingDataItem([1, 1, 0, 0, 0, 0, 0, 0, 0], [1]),  # Just Boots
+            TrainingDataItem([1, 1, 1, 1, 1, 1, 0, 0, 0], [1]),  # Boots + Everything
+            TrainingDataItem([1, 1, 0, 0, 0, 0, 0, 1, 0], [1]),  # Boots + Hot
+            TrainingDataItem([1, 1, 1, 0, 1, 0, 0, 1, 0], [1]),  # Random clothes OK
+
+            # --- Success Cases (Cold Weather - Needs 2,3,5) ---
+            TrainingDataItem([1, 1, 1, 1, 0, 1, 1, 0, 0], [1]),  # Cold + All Gear
+            TrainingDataItem([1, 1, 1, 1, 1, 1, 1, 0, 0], [1]),  # Cold + All Gear + Glasses
+            TrainingDataItem([1, 1, 1, 1, 0, 1, 1, 0, 0], [1]),  # Cold + Min Gear
+
+            # --- Success Cases (Dazzling - Needs 4) ---
+            TrainingDataItem([1, 1, 0, 0, 1, 0, 0, 0, 1], [1]),  # Dazzle + Glasses
+            TrainingDataItem([1, 1, 1, 1, 1, 1, 0, 0, 1], [1]),  # Dazzle + Glasses + Extra
+
+            # --- Success Cases (Cold + Dazzling - Needs 2,3,4,5) ---
+            TrainingDataItem([1, 1, 1, 1, 1, 1, 1, 0, 1], [1]),  # All conditions met
+
+            # --- Bulk Data (Generated Combinations) ---
+            TrainingDataItem([1, 1, 0, 1, 0, 1, 0, 1, 0], [1]),  # Hot, no cold/dazzle rules
+            TrainingDataItem([0, 1, 1, 1, 1, 1, 1, 0, 1], [0]),  # Full gear but missing L boot
+            TrainingDataItem([1, 1, 0, 0, 0, 0, 1, 0, 0], [0]),  # Cold, just boots
+            TrainingDataItem([1, 1, 0, 0, 1, 0, 0, 1, 1], [1]),  # Hot+Dazzle+Glasses
+            TrainingDataItem([1, 1, 1, 1, 0, 1, 0, 0, 0], [1]),  # Random mix, weather nice
+            TrainingDataItem([1, 1, 1, 0, 0, 1, 0, 0, 0], [1]),  # Random mix, weather nice
+            TrainingDataItem([1, 1, 0, 1, 0, 0, 0, 0, 0], [1]),  # Random mix, weather nice
+            TrainingDataItem([1, 1, 0, 0, 0, 0, 0, 0, 1], [0]),  # Dazzle, no glasses
+            TrainingDataItem([1, 1, 0, 0, 1, 0, 0, 0, 0], [1]),  # Glasses, no dazzle
+            TrainingDataItem([1, 1, 1, 1, 0, 0, 1, 0, 0], [0]),  # Cold, missing jacket
+            TrainingDataItem([1, 1, 0, 1, 0, 1, 1, 0, 0], [0]),  # Cold, missing pants
+            TrainingDataItem([1, 1, 1, 0, 0, 1, 1, 0, 0], [0]),  # Cold, missing cap
+            TrainingDataItem([1, 1, 1, 1, 1, 1, 1, 1, 1], [1]),  # Everything on/active (Passes all constraints)
+            TrainingDataItem([0, 0, 0, 0, 0, 0, 0, 0, 0], [0]),  # Naked at home
+            TrainingDataItem([1, 1, 0, 0, 0, 0, 0, 0, 0], [1]),  # Boots only, nice day
+            TrainingDataItem([1, 1, 0, 0, 0, 0, 0, 1, 0], [1]),  # Boots only, hot day
+            TrainingDataItem([1, 1, 0, 0, 0, 0, 1, 0, 0], [0]),  # Boots only, cold day
+            TrainingDataItem([1, 1, 1, 1, 1, 1, 0, 1, 0], [1]),  # Full gear, hot day
+            TrainingDataItem([1, 1, 0, 0, 1, 0, 0, 0, 1], [1]),  # Boots+Glasses, Dazzle
+            TrainingDataItem([1, 1, 0, 0, 0, 0, 0, 0, 1], [0]),  # Boots, Dazzle, No Glasses
+            TrainingDataItem([1, 0, 1, 1, 1, 1, 1, 0, 1], [0]),  # Perfect gear, missing R boot
+        ]
+        network = NeuralNetwork([9, 10, 10, 1], 0.5)
+        train(network, training_data, 500000)
+
+        # 0:L_Boot, 1:R_Boot, 2:Pants, 3:Cap, 4:Glasses, 5:Jacket, 6:Cold, 7:Hot, 8:Dazzling
+        # Some testing
+        print("[[Testing some examples:]]")
+        inputs = [
+            ["Everything except right foot and it's not cold", [1, 0, 1, 1, 1, 1, 0, 1, 1]],
+            ["I have my shoes on except nothing else and its cold", [1, 1, 0, 0, 0, 0, 1, 0, 0]]
+        ]
+        for text, values in inputs:
+            print(text, values, f": {network.think(values)}")
+
+
     # example_01()
-    example_02()
+    # example_02()
+    example_03()
+
