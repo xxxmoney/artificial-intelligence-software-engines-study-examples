@@ -80,7 +80,7 @@ class Neuron(ABC):
                 self.weights = new_weights
 
                 # Also adjust for bias
-                self.bias += error * LEARNING_RATE
+                self.bias += gradient * LEARNING_RATE
 
         print(f"Training complete")
 
