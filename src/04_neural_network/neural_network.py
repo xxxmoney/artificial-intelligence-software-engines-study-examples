@@ -320,28 +320,37 @@ if __name__ == "__main__":
             # --- Success Cases (Cold + Dazzling - Needs 2,3,4,5) ---
             TrainingDataItem([1, 1, 1, 1, 1, 1, 1, 0, 1], [1]),  # All conditions met
 
-            # --- Bulk Data (Generated Combinations) ---
-            TrainingDataItem([1, 1, 0, 1, 0, 1, 0, 1, 0], [1]),  # Hot, no cold/dazzle rules
-            TrainingDataItem([0, 1, 1, 1, 1, 1, 1, 0, 1], [0]),  # Full gear but missing L boot
-            TrainingDataItem([1, 1, 0, 0, 0, 0, 1, 0, 0], [0]),  # Cold, just boots
-            TrainingDataItem([1, 1, 0, 0, 1, 0, 0, 1, 1], [1]),  # Hot+Dazzle+Glasses
-            TrainingDataItem([1, 1, 1, 1, 0, 1, 0, 0, 0], [1]),  # Random mix, weather nice
-            TrainingDataItem([1, 1, 1, 0, 0, 1, 0, 0, 0], [1]),  # Random mix, weather nice
-            TrainingDataItem([1, 1, 0, 1, 0, 0, 0, 0, 0], [1]),  # Random mix, weather nice
-            TrainingDataItem([1, 1, 0, 0, 0, 0, 0, 0, 1], [0]),  # Dazzle, no glasses
-            TrainingDataItem([1, 1, 0, 0, 1, 0, 0, 0, 0], [1]),  # Glasses, no dazzle
-            TrainingDataItem([1, 1, 1, 1, 0, 0, 1, 0, 0], [0]),  # Cold, missing jacket
-            TrainingDataItem([1, 1, 0, 1, 0, 1, 1, 0, 0], [0]),  # Cold, missing pants
-            TrainingDataItem([1, 1, 1, 0, 0, 1, 1, 0, 0], [0]),  # Cold, missing cap
-            TrainingDataItem([1, 1, 1, 1, 1, 1, 1, 1, 1], [1]),  # Everything on/active (Passes all constraints)
-            TrainingDataItem([0, 0, 0, 0, 0, 0, 0, 0, 0], [0]),  # Naked at home
-            TrainingDataItem([1, 1, 0, 0, 0, 0, 0, 0, 0], [1]),  # Boots only, nice day
-            TrainingDataItem([1, 1, 0, 0, 0, 0, 0, 1, 0], [1]),  # Boots only, hot day
-            TrainingDataItem([1, 1, 0, 0, 0, 0, 1, 0, 0], [0]),  # Boots only, cold day
-            TrainingDataItem([1, 1, 1, 1, 1, 1, 0, 1, 0], [1]),  # Full gear, hot day
-            TrainingDataItem([1, 1, 0, 0, 1, 0, 0, 0, 1], [1]),  # Boots+Glasses, Dazzle
-            TrainingDataItem([1, 1, 0, 0, 0, 0, 0, 0, 1], [0]),  # Boots, Dazzle, No Glasses
-            TrainingDataItem([1, 0, 1, 1, 1, 1, 1, 0, 1], [0]),  # Perfect gear, missing R boot
+            # --- ROBUSTNESS VARIATIONS ---
+            # Random realistic configurations
+            TrainingDataItem([1, 1, 0, 1, 0, 0, 0, 0, 0], [1.0]),  # Just Cap
+            TrainingDataItem([1, 1, 0, 0, 0, 1, 0, 0, 0], [1.0]),  # Just Jacket
+            TrainingDataItem([1, 1, 1, 0, 1, 0, 0, 0, 0], [1.0]),  # Pants + Glasses
+            TrainingDataItem([1, 1, 1, 1, 1, 1, 1, 0, 0], [1.0]),  # Full winter gear
+            TrainingDataItem([1, 1, 0, 0, 0, 0, 1, 0, 0], [0.2]),  # Cold, no gear
+            TrainingDataItem([1, 1, 1, 0, 0, 0, 1, 0, 0], [0.6]),  # Cold, pants only
+            TrainingDataItem([1, 1, 0, 1, 0, 0, 1, 0, 0], [0.5]),
+            # Cold, cap only (-0.4 -0.3 + 0.2 base?) -> 1.0 -0.4 -0.3 = 0.3
+            # Correction on line above: 1.0 - 0.4(pants) - 0.3(jacket) = 0.3 (Cap prevents -0.1)
+            TrainingDataItem([1, 1, 0, 1, 0, 0, 1, 0, 0], [0.3]),
+
+            TrainingDataItem([1, 1, 0, 0, 0, 1, 1, 0, 0], [0.5]),  # Cold, jacket only (1.0 -0.4 -0.1)
+            TrainingDataItem([1, 1, 1, 1, 1, 0, 1, 0, 1], [0.5]),  # Cold+Dazzle, No Jacket/Glasses (1.0 -0.3 -0.2)
+            TrainingDataItem([1, 1, 0, 0, 1, 1, 0, 1, 0], [0.8]),  # Hot, Jacket+Glasses
+            TrainingDataItem([1, 1, 1, 1, 1, 1, 0, 1, 1], [0.6]),  # Hot+Dazzle, Jacket+Glasses (1.0 -0.2 -0.2)
+            # Correction: Glasses prevent dazzle penalty. 1.0 -0.2(hot/jacket) = 0.8
+            TrainingDataItem([1, 1, 1, 1, 1, 1, 0, 1, 1], [0.8]),
+
+            TrainingDataItem([1, 1, 1, 1, 0, 1, 0, 1, 1], [0.6]),  # Hot+Dazzle, Jacket, No Glasses (1.0 -0.2 -0.2)
+            TrainingDataItem([1, 1, 1, 1, 1, 0, 1, 1, 0], [0.7]),  # Cold+Hot (Contradiction?), No Jacket.
+            # If Cold+Hot: Cold penalties apply (No jacket=-0.3), Hot penalty (Jacket=0). Score: 0.7
+
+            TrainingDataItem([1, 1, 0, 0, 1, 0, 0, 0, 0], [1.0]),
+            TrainingDataItem([1, 1, 1, 0, 0, 1, 0, 0, 0], [1.0]),
+            TrainingDataItem([1, 1, 0, 1, 1, 0, 0, 0, 0], [1.0]),
+            TrainingDataItem([1, 1, 0, 0, 0, 0, 0, 0, 0], [1.0]),
+            TrainingDataItem([1, 1, 1, 1, 1, 1, 0, 0, 0], [1.0]),
+            TrainingDataItem([1, 1, 0, 0, 0, 0, 1, 0, 0], [0.2]),
+            TrainingDataItem([1, 1, 1, 0, 0, 0, 1, 0, 0], [0.6]),
         ]
         network = NeuralNetwork([9, 10, 10, 1], 0.5)
         train(network, training_data, 500000)
