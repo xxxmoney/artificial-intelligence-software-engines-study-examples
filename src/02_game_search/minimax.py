@@ -13,7 +13,7 @@ from src.tree import TreeNode
 #
 
 
-def minimax(node: TreeNode[IGameState], depth: int = 5) -> float:
+def minimax(node: TreeNode[IGameState], depth: int = 5, alpha = float('-inf'), beta = float('inf')) -> float:
     node.visits += 1
 
     # Either the game has finished or the max depth was reached
@@ -30,12 +30,17 @@ def minimax(node: TreeNode[IGameState], depth: int = 5) -> float:
 
         for state in node.state.possible_next_states:
             child_node = node.add_child(state)
-            child_node.score = minimax(child_node, depth - 1)
+            child_node.score = minimax(child_node, depth - 1, alpha, beta)
 
             if child_node.score > max_score:
                 max_score = child_node.score
                 node.best_child = child_node
                 node.score = child_node.score
+
+            # Pruning (Alpha-Beta)
+            alpha = max(alpha, max_score)
+            if alpha >= beta:
+                break
 
     # Opponent is playing this state, and they want to find theirs max - so ours min
     else:
@@ -43,12 +48,17 @@ def minimax(node: TreeNode[IGameState], depth: int = 5) -> float:
 
         for state in node.state.possible_next_states:
             child_node = node.add_child(state)
-            child_node.score = minimax(child_node, depth - 1)
+            child_node.score = minimax(child_node, depth - 1, alpha, beta)
 
             if child_node.score < min_score:
                 min_score = child_node.score
                 node.best_child = child_node
                 node.score = child_node.score
+
+            # Pruning (Alpha-Beta)
+            beta = min(beta, min_score)
+            if alpha >= beta:
+                break
 
     return node.score
 
