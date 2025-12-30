@@ -10,6 +10,13 @@ from src.tree import TreeNode
 # The MINIMAX function is called recursively upon each state - its called until the limit is reached
 # - The limit is either game end (win max value, loose min value) or max depth (evaluation of state)
 # - Upon reaching the limit of call tree of MINIMAX, the last call returns the value which is then propagated through recursion upwards)
+# MINIMAX can be slow - to improve this, we can use Alpha-Beta pruning
+# - We have two parameters Alpha and Beta
+# - Alpha is the lower limit for MAX - it's set by MAX - the so far ensured maximum MAX
+# - Beta is the upper limit for MAX - it's set by MIN - the so far ensured minimum MIN
+# - if Alpha <= Beta we quit - why?
+# - Because:
+#   - Alpha is set by MAX and Beta by MIN - if the MIN is lower then MAX, the MIN will surely be choosing it, meaning we don't need to explore that whole branch (because we have ensure MAX - the Alpha - in other branch)
 #
 
 
