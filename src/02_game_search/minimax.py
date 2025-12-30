@@ -44,7 +44,7 @@ def minimax(node: TreeNode[IGameState], depth: int = 5, alpha = float('-inf'), b
                 node.best_child = child_node
                 node.score = child_node.score
 
-            # Pruning (Alpha-Beta)
+            # Pruning (Alpha-Beta) - MAX is setting its best MAX so far
             alpha = max(alpha, max_score)
             if alpha >= beta:
                 break
@@ -62,7 +62,7 @@ def minimax(node: TreeNode[IGameState], depth: int = 5, alpha = float('-inf'), b
                 node.best_child = child_node
                 node.score = child_node.score
 
-            # Pruning (Alpha-Beta)
+            # Pruning (Alpha-Beta) - MIN is settings its best MIN so far
             beta = min(beta, min_score)
             if alpha >= beta:
                 break
