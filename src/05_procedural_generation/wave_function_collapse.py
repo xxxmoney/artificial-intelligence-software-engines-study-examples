@@ -132,6 +132,7 @@ class Grid:
 
         return False
 
+    # TODO: fix this, probably will need to somehow better for neighbour compatibility
     def reduce_possible_tile_types(self, row: int, column: int):
         tile = self._tiles[row][column]
         possible_types = TileType.get_possible_types(tile.possible_types)
