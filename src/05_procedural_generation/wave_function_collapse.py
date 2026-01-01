@@ -85,6 +85,10 @@ class Tile:
     def possible_types(self):
         return self._possible_types
 
+    @property
+    def possible_types_count(self):
+        return len(self._possible_types)
+
     def reduce_possible_types(self, reduced_types: list[TileType]):
         if self._type is not None:
             raise Exception('Cannot reduce types for defined type')
@@ -118,6 +122,7 @@ class Grid:
 
     def set_tile_type(self, row: int, column: int, type: TileType):
         self._tiles[row][column].type = type
+        self.reduce_possible_tile_types(row, column)
 
     def has_tile(self, row: int, column: int) -> bool:
         return self.get_tile_type(row, column) is not None
@@ -133,7 +138,7 @@ class Grid:
     def reduce_possible_tile_types(self, row: int, column: int):
         tile = self._tiles[row][column]
 
-        for row, column in self.get_neighbour_positions(row, column):
+        for row, column in self._get_neighbour_positions(row, column):
             neighbour = self._tiles[row][column]
 
             # We don't reduce states for already defined tiles
@@ -155,8 +160,10 @@ class Grid:
             if changed:
                 self.reduce_possible_tile_types(row, column)
 
+    def get_neighbours(self, row: int, column: int) -> list[Tile]:
+        return [self._tiles[row][column] for row, column in self._get_neighbour_positions(row, column)]
 
-    def get_neighbour_positions(self, row: int, column: int) ->  list[tuple[int, int]]:
+    def _get_neighbour_positions(self, row: int, column: int) ->  list[tuple[int, int]]:
         positions: list[tuple[int, int]] = []
 
         # Left
@@ -188,13 +195,21 @@ class WaveFunctionCollapse:
     def __init__(self, grid: Grid):
         self.grid = grid
 
+    # TODO: test collapsing
+    def collapse(self, row: int, column: int):
+        neighbour_with_least_possible_types: Optional[Tile] = None
+        for neighbour in self.grid.get_neighbours(row, column):
+            if neighbour_with_least_possible_types is None or neighbour.possible_types_count < neighbour_with_least_possible_types.possible_types_count:
+                neighbour_with_least_possible_types = neighbour
+
 
 if __name__ == "__main__":
     grid = Grid(5, 5)
 
-    grid.set_tile_type(0, 0, TileType.MOUNTAIN)
-    grid.reduce_possible_tile_types(0, 0)
+    row, column = (0, 0)
+    grid.set_tile_type(row, column, TileType.MOUNTAIN)
 
-    #wfc = WaveFunctionCollapse(grid)
+    wfc = WaveFunctionCollapse(grid)
+    wfc.collapse(row, column)
 
     print(grid)
