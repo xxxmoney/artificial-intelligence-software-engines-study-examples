@@ -1,4 +1,4 @@
-import random
+from collections import defaultdict
 from enum import Enum
 from typing import Optional
 
@@ -27,35 +27,26 @@ class TileType(Enum):
         return set(list(TileType))
 
     @staticmethod
-    def get_rules() -> dict['TileType', set['TileType']]:
-        return {
-            TileType.MOUNTAIN: {
-                TileType.MOUNTAIN,
-                TileType.GRASS,
-                TileType.LAKE
-            },
-            TileType.GRASS: {
-                TileType.GRASS,
-                TileType.LAKE
-            },
-            TileType.LAKE: {
-                TileType.GRASS
-            },
-            TileType.CASTLE: {
-                TileType.MOUNTAIN,
-                TileType.LAKE
-            }
-        }
+    def get_connections() -> list[tuple['TileType', 'TileType']]:
+        return [
+            (TileType.MOUNTAIN, TileType.GRASS),
+            (TileType.MOUNTAIN, TileType.CASTLE),
+            (TileType.GRASS, TileType.LAKE),
+            (TileType.CASTLE, TileType.LAKE),
+            (TileType.GRASS, TileType.GRASS)
+        ]
 
     @staticmethod
-    def get_possible_types(options: set['TileType']) -> set['TileType']:
-        compatible = TileType.get_all()
-        rules = TileType.get_rules()
+    def get_rules() -> dict['TileType', set['TileType']]:
+        rules = defaultdict(set)
+        for a, b in TileType.get_connections():
+            rules[a].add(b)
+            rules[b].add(a) # A <-> B symmetry
+        return dict(rules)
 
-        for n in options:
-            compatible &= rules[n]
-
-        return compatible
+    @staticmethod
+    def are_compatible(first_type: 'TileType', second_type: 'TileType') -> bool:
+        return second_type in TileType.get_rules()[first_type]
 
     def __str__(self):
         match self:
@@ -76,7 +67,7 @@ class Tile:
 
     def __init__(self, type: Optional[TileType]):
         self._type = type
-        self._possible_types = [type] if type is not None else TileType.get_all()
+        self._possible_types = {type} if type is not None else TileType.get_all()
 
     @property
     def type(self):
@@ -94,11 +85,18 @@ class Tile:
     def possible_types(self):
         return self._possible_types
 
-    def reduce_possible_types(self, reduced_types: set[TileType]):
+    def reduce_possible_types(self, reduced_types: list[TileType]):
         if self._type is not None:
             raise Exception('Cannot reduce types for defined type')
 
-        self._possible_types -= reduced_types
+        self._possible_types -= set(reduced_types)
+
+    def is_compatible(self, other_type: TileType) -> bool:
+        for type in self._possible_types:
+            if TileType.are_compatible(type, other_type):
+                return True
+
+        return False
 
     def __str__(self):
         return f"[{self.type}: {self.possible_types}]"
@@ -132,20 +130,27 @@ class Grid:
 
         return False
 
-    # TODO: fix this, probably will need to somehow better for neighbour compatibility
     def reduce_possible_tile_types(self, row: int, column: int):
         tile = self._tiles[row][column]
-        possible_types = TileType.get_possible_types(tile.possible_types)
 
         for row, column in self.get_neighbour_positions(row, column):
             neighbour = self._tiles[row][column]
-            # Neighbour has possible types - by reducing the set possible types for neighbours we get those that the neighbour cannot be - reduced types
-            reduced_types = neighbour.possible_types - possible_types
 
-            # Only reduce and apply to neighbour if can reduce anything
-            if neighbour.type is None and reduced_types:
-                neighbour.reduce_possible_types(reduced_types)
+            if neighbour.type is not None:
+                continue
+
+            changed = False
+            reduced_types = []
+            for neighbour_type in neighbour.possible_types:
+                if not tile.is_compatible(neighbour_type):
+                    reduced_types.append(neighbour_type)
+                    changed = True
+
+            neighbour.reduce_possible_types(reduced_types)
+
+            if changed:
                 self.reduce_possible_tile_types(row, column)
+
 
     def get_neighbour_positions(self, row: int, column: int) ->  list[tuple[int, int]]:
         positions: list[tuple[int, int]] = []
