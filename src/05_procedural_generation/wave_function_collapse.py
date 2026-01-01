@@ -136,18 +136,22 @@ class Grid:
         for row, column in self.get_neighbour_positions(row, column):
             neighbour = self._tiles[row][column]
 
+            # We don't reduce states for already defined tiles
             if neighbour.type is not None:
                 continue
 
             changed = False
             reduced_types = []
             for neighbour_type in neighbour.possible_types:
+                # Possible type of the neighbour tile is not compatible - add to list to be removed
                 if not tile.is_compatible(neighbour_type):
                     reduced_types.append(neighbour_type)
                     changed = True
 
+            # Remove not compatible with tile
             neighbour.reduce_possible_types(reduced_types)
 
+            # Explore neighbours if changed (removed some possible type)
             if changed:
                 self.reduce_possible_tile_types(row, column)
 
