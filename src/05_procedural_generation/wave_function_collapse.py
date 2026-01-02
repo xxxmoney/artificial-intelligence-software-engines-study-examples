@@ -323,5 +323,5 @@ if __name__ == "__main__":
     wfc = WaveFunctionCollapse(grid)
     wfc.generate(0, 0, [TileType.MOUNTAIN])
 
-    #print(str(grid))
-    print(repr(grid))
+    print(str(grid))
+    #print(repr(grid))
