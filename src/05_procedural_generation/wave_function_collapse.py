@@ -34,10 +34,20 @@ class TileType(Enum):
 
     @staticmethod
     def get_all() -> set['TileType']:
+        """
+        Gets all TileType enum values
+
+        :return: All values of TileType enum
+        """
         return set(list(TileType))
 
     @staticmethod
     def get_connections() -> list[tuple['TileType', 'TileType']]:
+        """
+        Get all connections - so basically allowed neighbours
+
+        :return: List of pairs of allowed neighbours
+        """
         return [
             (TileType.MOUNTAIN, TileType.GRASS),
             (TileType.MOUNTAIN, TileType.CASTLE),
@@ -48,6 +58,11 @@ class TileType(Enum):
 
     @staticmethod
     def get_rules() -> dict['TileType', set['TileType']]:
+        """
+        Gets rules what type can neighbour with what other types
+
+        :return: Dictionary of which types (value) are allowed as neighbours for type (key)
+        """
         rules = defaultdict(set)
         for a, b in TileType.get_connections():
             rules[a].add(b)
@@ -56,6 +71,13 @@ class TileType(Enum):
 
     @staticmethod
     def are_compatible(first_type: 'TileType', second_type: 'TileType') -> bool:
+        """
+        Whether two types can be neighbours
+
+        :param first_type: First type
+        :param second_type: Second type
+        :return: Whether they are compatible
+        """
         return second_type in TileType.get_rules()[first_type]
 
     def __str__(self):
@@ -70,6 +92,9 @@ class TileType(Enum):
                 return "C"
             case _:
                 return "_"
+
+    def __repr__(self):
+        return repr(self.__str__())
 
 class Tile:
     _type: Optional[TileType] # The type of this tile
@@ -140,7 +165,10 @@ class Tile:
         self._possible_types -= set(reduced_types)
 
     def __str__(self):
-        return f"[{self.type}: {self.possible_types}]"
+        return f"[{str(self.type)}]"
+
+    def __repr__(self):
+        return f"[{repr(self.type)}: {repr(self.possible_types)}]"
 
 @dataclass
 class TileWithPosition:
@@ -189,11 +217,12 @@ class Grid:
         return self.get_tile(row, column).type
 
     def set_tile_type(self, row: int, column: int, type: TileType):
-        self._set_tile_type(self.get_tile(row, column), type)
+        tile = TileWithPosition(row = row, column = column, tile = self.get_tile(row, column))
+        self._set_tile_type(tile, type)
 
     def set_random_tile_type(self, row: int, column: int):
-        tile = self.get_tile(row, column)
-        self._set_tile_type(tile, random.choice(list(tile.possible_types)))
+        tile = TileWithPosition(row = row, column = column, tile = self.get_tile(row, column))
+        self._set_tile_type(tile, random.choice(list(tile.tile.possible_types)))
 
     def has_tile(self, row: int, column: int) -> bool:
         return self.get_tile_type(row, column) is not None
@@ -209,10 +238,10 @@ class Grid:
 
         return False
 
-    def _set_tile_type(self, tile: Tile, type: TileType):
-        tile.type = type
+    def _set_tile_type(self, tile: TileWithPosition, type: TileType):
+        tile.tile.type = type
         # Tile type change - we need to reduce the possible types of neighbours
-        self.reduce_neighbours_possible_tile_types(row, column)
+        self.reduce_neighbours_possible_tile_types(tile.row, tile.column)
 
     def _get_neighbours_positions(self, row: int, column: int) ->  list[tuple[int, int]]:
         """
@@ -248,13 +277,28 @@ class Grid:
 
         return "\n".join(rows)
 
+    def __repr__(self):
+        rows = []
+
+        for row in self._tiles:
+            rows.append("\t".join([repr(tile) for tile in row]))
+
+        return "\n".join(rows)
+
 class WaveFunctionCollapse:
     grid: Grid
 
     def __init__(self, grid: Grid):
         self.grid = grid
 
-    # TODO: test collapsing
+    def generate(self, row, column, tile_types: Optional[list[TileType]] = None):
+        if tile_types is None:
+            grid.set_random_tile_type(row, column)
+        else:
+            grid.set_tile_type(row, column, random.choice(tile_types))
+
+        self.collapse(row, column)
+
     def collapse(self, row: int, column: int):
         # Neighbour with least possible types count (or first one of the least)
         candidate: Optional[TileWithPosition] = None
@@ -276,10 +320,8 @@ class WaveFunctionCollapse:
 if __name__ == "__main__":
     grid = Grid(5, 5)
 
-    row, column = (0, 0)
-    grid.set_tile_type(row, column, TileType.MOUNTAIN)
-
     wfc = WaveFunctionCollapse(grid)
-    wfc.collapse(row, column)
+    wfc.generate(0, 0, [TileType.MOUNTAIN])
 
-    print(grid)
+    #print(str(grid))
+    print(repr(grid))
