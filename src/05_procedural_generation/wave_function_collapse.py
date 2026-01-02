@@ -20,8 +20,7 @@ from typing import Optional
 #   - The same goes for neighbours - their possible types changed, so they also need to check their own neighbours, etc
 #   - One recursion end is in the moment the neighbour won't change - its already compatible
 # - Collapse (of tile type)
-#   - This now defines the defined tile's neighbours - each neighbour now has less superposition (ie entropy - the number of possible states)
-#   - We take the one with least entropy and do choose randomly from available
+#   - We take the first tile with least entropy from whole board and choose its type randomly from available
 #   - So we could have now 3 neighbours that have 4 types and 1 which has 2 - we choose the on with 2 and randomly choose its type
 #   - And this now cascades further - and this repeats until the whole grid is defined
 #
@@ -213,6 +212,16 @@ class Grid:
     def get_neighbours(self, row: int, column: int) -> list[TileWithPosition]:
         return [TileWithPosition(row = neighbour_row, column = neighbour_column, tile = self.get_tile(neighbour_row, neighbour_column)) for neighbour_row, neighbour_column in self._get_neighbours_positions(row, column)]
 
+    def get_tile_with_least_possible_states(self) -> TileWithPosition:
+        selected: Optional[TileWithPosition] = None
+
+        for row_index, row in enumerate(self._tiles):
+            for column_index, tile in enumerate(row):
+                if tile.type is None and (selected is None or selected.tile.possible_types_count < tile.possible_types_count):
+                    selected = TileWithPosition(row = row_index, column = column_index, tile = tile)
+
+        return selected
+
     def get_tile_type(self, row: int, column: int) -> TileType:
         return self.get_tile(row, column).type
 
@@ -300,29 +309,30 @@ class WaveFunctionCollapse:
         self.collapse(row, column)
 
     def collapse(self, row: int, column: int):
-        # Neighbour with least possible types count (or first one of the least)
-        candidate: Optional[TileWithPosition] = None
+        # Tile with least possible types count (or first one of the least)
+        selected = grid.get_tile_with_least_possible_states()
 
-        # TODO: for candidate, do not just search neighbours - search the whole grid
-        # Need to get the on with least possible types - thats the one we will be choosing specific types first
-        for neighbour in self.grid.get_neighbours(row, column):
-            # Neighbour has to have none type set yet and less possible types then the current candidate - or current candidate is none
-            if neighbour.tile.type is None and (candidate is None or neighbour.tile.possible_types_count < candidate.tile.possible_types_count):
-                candidate = neighbour
-
-        if candidate is not None:
+        if selected is not None:
             # We have one - choose random specific type for it
-            self.grid.set_random_tile_type(candidate.row, candidate.column)
+            self.grid.set_random_tile_type(selected.row, selected.column)
 
             # call collapse on the candidate now
-            self.collapse(candidate.row, candidate.column)
+            self.collapse(selected.row, selected.column)
 
 
 if __name__ == "__main__":
+    #
+    # A sample test of generating simple grid using WFC
+    #
+
+    # Create simple grid 5x5
     grid = Grid(5, 5)
 
     wfc = WaveFunctionCollapse(grid)
+    # Create first tile Mountain and generate the whole map
     wfc.generate(0, 0, [TileType.MOUNTAIN])
 
+    # Print the grid
     print(str(grid))
+    # Debug printing is also available
     #print(repr(grid))
