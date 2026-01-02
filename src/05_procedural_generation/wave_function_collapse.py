@@ -87,16 +87,37 @@ class Tile:
 
     @property
     def possible_types_count(self):
-        return len(self._possible_types)
+        return len(self.possible_types)
 
-    def reduce_possible_types(self, reduced_types: list[TileType]):
-        if self._type is not None:
+    def reduce_noncompatible_possible_types(self, other_tile: 'Tile') -> bool:
+        """
+        Removes not compatible possible types with other tile
+
+        :param other_tile: Tile to check compatibility with
+        :return: Whether this tile's possible states have changed or not
+        """
+        changed = False
+        reduced_types = []
+
+        for type in self.possible_types:
+            # Possible type of the other tile is not compatible - add to list to be removed
+            if not other_tile.is_compatible(type):
+                reduced_types.append(type)
+                changed = True
+
+        # Remove not compatible with tile
+        self._reduce_possible_types(reduced_types)
+
+        return changed
+
+    def _reduce_possible_types(self, reduced_types: list[TileType]):
+        if self.type is not None:
             raise Exception('Cannot reduce types for defined type')
 
         self._possible_types -= set(reduced_types)
 
     def is_compatible(self, other_type: TileType) -> bool:
-        for type in self._possible_types:
+        for type in self.possible_types:
             if TileType.are_compatible(type, other_type):
                 return True
 
@@ -145,19 +166,8 @@ class Grid:
             if neighbour.type is not None:
                 continue
 
-            changed = False
-            reduced_types = []
-            for neighbour_type in neighbour.possible_types:
-                # Possible type of the neighbour tile is not compatible - add to list to be removed
-                if not tile.is_compatible(neighbour_type):
-                    reduced_types.append(neighbour_type)
-                    changed = True
-
-            # Remove not compatible with tile
-            neighbour.reduce_possible_types(reduced_types)
-
             # Explore neighbours if changed (removed some possible type)
-            if changed:
+            if neighbour.reduce_noncompatible_possible_types(tile):
                 self.reduce_possible_tile_types(row, column)
 
     def get_neighbours(self, row: int, column: int) -> list[Tile]:
