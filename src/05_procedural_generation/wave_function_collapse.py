@@ -199,8 +199,8 @@ class Grid:
 
         tile = self.get_tile(row, column)
 
-        for row, column in self._get_neighbours_positions(row, column):
-            neighbour = self.get_tile(row, column)
+        for neighbour_row, neighbour_column in self._get_neighbours_positions(row, column):
+            neighbour = self.get_tile(neighbour_row, neighbour_column)
 
             # We don't reduce states for already defined tiles
             if neighbour.type is not None:
@@ -208,7 +208,7 @@ class Grid:
 
             # Explore neighbours if changed (removed some possible type)
             if neighbour.reduce_noncompatible_possible_types(tile):
-                self.reduce_neighbours_possible_tile_types(row, column)
+                self.reduce_neighbours_possible_tile_types(neighbour_row, neighbour_column)
 
     def get_neighbours(self, row: int, column: int) -> list[TileWithPosition]:
         return [TileWithPosition(row = neighbour_row, column = neighbour_column, tile = self.get_tile(neighbour_row, neighbour_column)) for neighbour_row, neighbour_column in self._get_neighbours_positions(row, column)]
@@ -303,6 +303,7 @@ class WaveFunctionCollapse:
         # Neighbour with least possible types count (or first one of the least)
         candidate: Optional[TileWithPosition] = None
 
+        # TODO: for candidate, do not just search neighbours - search the whole grid
         # Need to get the on with least possible types - thats the one we will be choosing specific types first
         for neighbour in self.grid.get_neighbours(row, column):
             # Neighbour has to have none type set yet and less possible types then the current candidate - or current candidate is none
