@@ -69,26 +69,6 @@ class Tile:
         self._type = type
         self._possible_types = {type} if type is not None else TileType.get_all()
 
-    @property
-    def type(self):
-        return self._type
-
-    @type.setter
-    def type(self, type: TileType):
-        if self._type is not None:
-            raise Exception('Cannot set type twice')
-
-        self._type = type
-        self._possible_types = {type}
-
-    @property
-    def possible_types(self):
-        return self._possible_types
-
-    @property
-    def possible_types_count(self):
-        return len(self.possible_types)
-
     def reduce_noncompatible_possible_types(self, other_tile: 'Tile') -> bool:
         """
         Removes not compatible possible types with other tile
@@ -110,18 +90,44 @@ class Tile:
 
         return changed
 
-    def _reduce_possible_types(self, reduced_types: list[TileType]):
-        if self.type is not None:
-            raise Exception('Cannot reduce types for defined type')
-
-        self._possible_types -= set(reduced_types)
-
     def is_compatible(self, other_type: TileType) -> bool:
+        """
+        Checks whether other type is compatible with any possible types of this tile
+
+        :param other_type: Type to be checked against
+        :return: Whether is compatible or not
+        """
         for type in self.possible_types:
             if TileType.are_compatible(type, other_type):
                 return True
 
         return False
+
+    @property
+    def type(self):
+        return self._type
+
+    @type.setter
+    def type(self, type: TileType):
+        if self._type is not None:
+            raise Exception('Cannot set type twice')
+
+        self._type = type
+        self._possible_types = {type}
+
+    @property
+    def possible_types(self):
+        return self._possible_types
+
+    @property
+    def possible_types_count(self):
+        return len(self.possible_types)
+
+    def _reduce_possible_types(self, reduced_types: list[TileType]):
+        if self.type is not None:
+            raise Exception('Cannot reduce types for defined type')
+
+        self._possible_types -= set(reduced_types)
 
     def __str__(self):
         return f"[{self.type}: {self.possible_types}]"
@@ -137,6 +143,31 @@ class Grid:
 
         # Set default grid by row count and column count
         self._tiles = [[Tile(None) for _ in range(row_count)] for _ in range(column_count)]
+
+    def reduce_possible_tile_types(self, row: int, column: int) -> None:
+        """
+        Starts reductions (from specific position) of possible tile types - ie for the whole board removes non-compatible possible types for neighbours
+
+        :param row: Start row
+        :param column: Start column
+        :return: None
+        """
+
+        tile = self._tiles[row][column]
+
+        for row, column in self._get_neighbour_positions(row, column):
+            neighbour = self._tiles[row][column]
+
+            # We don't reduce states for already defined tiles
+            if neighbour.type is not None:
+                continue
+
+            # Explore neighbours if changed (removed some possible type)
+            if neighbour.reduce_noncompatible_possible_types(tile):
+                self.reduce_possible_tile_types(row, column)
+
+    def get_neighbours(self, row: int, column: int) -> list[Tile]:
+        return [self._tiles[row][column] for row, column in self._get_neighbour_positions(row, column)]
 
     def get_tile_type(self, row: int, column: int) -> TileType:
         return self._tiles[row][column].type
@@ -156,24 +187,15 @@ class Grid:
 
         return False
 
-    def reduce_possible_tile_types(self, row: int, column: int):
-        tile = self._tiles[row][column]
-
-        for row, column in self._get_neighbour_positions(row, column):
-            neighbour = self._tiles[row][column]
-
-            # We don't reduce states for already defined tiles
-            if neighbour.type is not None:
-                continue
-
-            # Explore neighbours if changed (removed some possible type)
-            if neighbour.reduce_noncompatible_possible_types(tile):
-                self.reduce_possible_tile_types(row, column)
-
-    def get_neighbours(self, row: int, column: int) -> list[Tile]:
-        return [self._tiles[row][column] for row, column in self._get_neighbour_positions(row, column)]
-
     def _get_neighbour_positions(self, row: int, column: int) ->  list[tuple[int, int]]:
+        """
+        Get positions of neighbours for specific position
+
+        :param row: Row position
+        :param column: Column position
+        :return: List of positions (row, column)
+        """
+
         positions: list[tuple[int, int]] = []
 
         # Left
