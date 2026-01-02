@@ -1,4 +1,6 @@
+import random
 from collections import defaultdict
+from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
 
@@ -9,11 +11,19 @@ from typing import Optional
 # How it works:
 # - Imagine we have tiles grid - 10x10 - each tile can be of some type (mountain, grass, lake, etc) and each tile type has rules which another tile type can border with it
 # - So each tile has superposition - it can be multiple positions at once - at start, there are no positions, so each tile can be anything
+# - This is represented by possible tile types - each tile can "evolve" into any of these types - thus possible
 # - We start by defining one tile randomly or set it predefined
-# - This now defines the defined tile's neighbours - each neighbour now has less superposition (ie entropy - the number of possible states)
-# - We take the one with least entropy and do choose randomly from available
-# - So we could have now 3 neighbours that have 4 types and 1 which has 2 - we choose the on with 2 and randomly choose its type
-# - And this now cascades further - and this repeats until the whole grid is defined
+# - Reduce (of possible tile types)
+#   - Because we now set one tile, we may have broken compatibility of neighbouring rules (because previously anything could be anything, any tile could neighbour with any tile)
+#   - This now changed - so we need to start removing (reducing) the neighbours' possible tile types
+#   - For example if we define a specific type for tile, we need to check all neighbours and remove not compatible possible types with this tiles
+#   - The same goes for neighbours - their possible types changed, so they also need to check their own neighbours, etc
+#   - One recursion end is in the moment the neighbour won't change - its already compatible
+# - Collapse (of tile type)
+#   - This now defines the defined tile's neighbours - each neighbour now has less superposition (ie entropy - the number of possible states)
+#   - We take the one with least entropy and do choose randomly from available
+#   - So we could have now 3 neighbours that have 4 types and 1 which has 2 - we choose the on with 2 and randomly choose its type
+#   - And this now cascades further - and this repeats until the whole grid is defined
 #
 
 class TileType(Enum):
@@ -132,6 +142,12 @@ class Tile:
     def __str__(self):
         return f"[{self.type}: {self.possible_types}]"
 
+@dataclass
+class TileWithPosition:
+    row: int
+    column: int
+    tile: Tile
+
 class Grid:
     row_count: int
     column_count: int
@@ -144,7 +160,7 @@ class Grid:
         # Set default grid by row count and column count
         self._tiles = [[Tile(None) for _ in range(row_count)] for _ in range(column_count)]
 
-    def reduce_possible_tile_types(self, row: int, column: int) -> None:
+    def reduce_neighbours_possible_tile_types(self, row: int, column: int) -> None:
         """
         Starts reductions (from specific position) of possible tile types - ie for the whole board removes non-compatible possible types for neighbours
 
@@ -153,10 +169,10 @@ class Grid:
         :return: None
         """
 
-        tile = self._tiles[row][column]
+        tile = self.get_tile(row, column)
 
-        for row, column in self._get_neighbour_positions(row, column):
-            neighbour = self._tiles[row][column]
+        for row, column in self._get_neighbours_positions(row, column):
+            neighbour = self.get_tile(row, column)
 
             # We don't reduce states for already defined tiles
             if neighbour.type is not None:
@@ -164,20 +180,26 @@ class Grid:
 
             # Explore neighbours if changed (removed some possible type)
             if neighbour.reduce_noncompatible_possible_types(tile):
-                self.reduce_possible_tile_types(row, column)
+                self.reduce_neighbours_possible_tile_types(row, column)
 
-    def get_neighbours(self, row: int, column: int) -> list[Tile]:
-        return [self._tiles[row][column] for row, column in self._get_neighbour_positions(row, column)]
+    def get_neighbours(self, row: int, column: int) -> list[TileWithPosition]:
+        return [TileWithPosition(row = neighbour_row, column = neighbour_column, tile = self.get_tile(neighbour_row, neighbour_column)) for neighbour_row, neighbour_column in self._get_neighbours_positions(row, column)]
 
     def get_tile_type(self, row: int, column: int) -> TileType:
-        return self._tiles[row][column].type
+        return self.get_tile(row, column).type
 
     def set_tile_type(self, row: int, column: int, type: TileType):
-        self._tiles[row][column].type = type
-        self.reduce_possible_tile_types(row, column)
+        self._set_tile_type(self.get_tile(row, column), type)
+
+    def set_random_tile_type(self, row: int, column: int):
+        tile = self.get_tile(row, column)
+        self._set_tile_type(tile, random.choice(list(tile.possible_types)))
 
     def has_tile(self, row: int, column: int) -> bool:
         return self.get_tile_type(row, column) is not None
+
+    def get_tile(self, row: int, column: int) -> Tile:
+        return self._tiles[row][column]
 
     def has_any_tile(self) -> bool:
         for row in self._tiles:
@@ -187,7 +209,12 @@ class Grid:
 
         return False
 
-    def _get_neighbour_positions(self, row: int, column: int) ->  list[tuple[int, int]]:
+    def _set_tile_type(self, tile: Tile, type: TileType):
+        tile.type = type
+        # Tile type change - we need to reduce the possible types of neighbours
+        self.reduce_neighbours_possible_tile_types(row, column)
+
+    def _get_neighbours_positions(self, row: int, column: int) ->  list[tuple[int, int]]:
         """
         Get positions of neighbours for specific position
 
@@ -229,10 +256,21 @@ class WaveFunctionCollapse:
 
     # TODO: test collapsing
     def collapse(self, row: int, column: int):
-        neighbour_with_least_possible_types: Optional[Tile] = None
+        # Neighbour with least possible types count (or first one of the least)
+        candidate: Optional[TileWithPosition] = None
+
+        # Need to get the on with least possible types - thats the one we will be choosing specific types first
         for neighbour in self.grid.get_neighbours(row, column):
-            if neighbour_with_least_possible_types is None or neighbour.possible_types_count < neighbour_with_least_possible_types.possible_types_count:
-                neighbour_with_least_possible_types = neighbour
+            # Neighbour has to have none type set yet and less possible types then the current candidate - or current candidate is none
+            if neighbour.tile.type is None and (candidate is None or neighbour.tile.possible_types_count < candidate.tile.possible_types_count):
+                candidate = neighbour
+
+        if candidate is not None:
+            # We have one - choose random specific type for it
+            self.grid.set_random_tile_type(candidate.row, candidate.column)
+
+            # call collapse on the candidate now
+            self.collapse(candidate.row, candidate.column)
 
 
 if __name__ == "__main__":
