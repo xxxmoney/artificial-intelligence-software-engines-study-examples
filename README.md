@@ -11,6 +11,7 @@
       - tree.py - an easy to use implementation of tree for game states
       - game_state.py - basic "interfaces" for game states
       - tic_tac_toe_simple - a simpler simple implementation of tic tac toe - used for MINIMAX, MCTS, etc
+    - 02_basics - the very basics of information and AI - like entropy, etc
     - 01_number_representation - issues with representing very precise numbers using floating point - IEEE 754
     - 02_game_search - how is the game (its states and moves) represented and what algorithms are there to go through it
     - 03_behavior - how the NPC behavior is made - how to define rules for NPC to react to certain circumstances
