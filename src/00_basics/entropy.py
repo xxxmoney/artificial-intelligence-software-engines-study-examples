@@ -83,6 +83,62 @@ def calculate_joint_entropy(joint_probabilities: list[list[float]]) -> float:
     # Result is the total entropy minus entropy of y
     return joint_entropy - y_entropy
 
+def calculate_mutual_information(x_entropy, x_given_y_conditional_entropy) -> float:
+    """
+    How much entropy was "removed" by knowing x given y
+    In other words - how much uncertainty is gone due to knowing x given y
+
+    Calculates I(X;Y) = H(X) - H(X|Y)
+
+    :param x_entropy: Entropy of x
+    :param x_given_y_conditional_entropy: Entropy of x given y (conditional)
+    :return: Mutual information
+    """
+
+    return x_entropy - x_given_y_conditional_entropy
+
+
+def calculate_cross_entropy(real_distribution, model_distribution):
+    """
+    Calculates H(P, Q) = - sum( p(x) * log2(q(x)) )
+
+    real_distribution: True distribution (Reality)
+    model_distribution: Predicted distribution (Model)
+    """
+
+    negative_cross_entropy = 0
+
+    for i in range(len(real_distribution)):
+        p = real_distribution[i]
+        q = model_distribution[i]
+
+        # Avoid log(0) in model if reality expects it
+        if q == 0 and p > 0:
+            # Infinite penalty for impossible event happening
+            return float('inf')
+
+        term = p * math.log2(q)
+        negative_cross_entropy += term
+
+    return -negative_cross_entropy
+
+
+def calculate_kl_divergence(real_distribution, model_distribution):
+    """
+    How much error does the model have against reality
+
+    Calculates D_KL(P||Q) = sum( p(x) * log2(p(x) / q(x)) )
+
+    Alternatively: CrossEntropy(P,Q) - Entropy(P)
+    
+    :param real_distribution:
+    :param model_distribution:
+    :return:
+    """
+    real_entropy = calculate_entropy(real_distribution)
+    cross_entropy = calculate_cross_entropy(real_distribution, model_distribution)
+
+    return cross_entropy - real_entropy
 
 def print_entropy(type: str, title: str, probabilities: list[list[float]], entropy: float, description: Optional[str] = None) -> None:
     print(f"[[{str.upper(type)}]]\n[{title}] ({probabilities}): {entropy}")
