@@ -56,9 +56,9 @@ def calculate_conditional_entropy(y_probabilities: list[float], x_given_y_probab
 
     return entropy
 
-def calculate_conditional_joint_entropy(joint_probabilities: list[list[float]]) -> float:
+def calculate_joint_entropy(joint_probabilities: list[list[float]]) -> float:
     """
-    Calculates conditional probability from joint matrix
+    Calculates join probability from joint matrix
 
     Calculates H(X|Y) using the relation: H(X|Y) = H(X,Y) - H(Y)
 
@@ -72,7 +72,6 @@ def calculate_conditional_joint_entropy(joint_probabilities: list[list[float]]) 
         joint_entropy += calculate_entropy(probabilities)
 
     # Calculate (marginal) y probabilities (basically just sum of each whole column)
-    # Example: Sum of Col 1 is Prob(Y=Rain), Sum of Col 2 is Prob(Y=Sun)
     y_probabilities = [0] * len(joint_probabilities[0]) # For starters just 0s in length of each row
     for row in joint_probabilities:
         for i, probability in enumerate(row):
@@ -126,9 +125,9 @@ if __name__ == "__main__":
             [0.10, 0.40]  # If Forecast is Sun - chances for real Weather - Rain/Sun
         ]
 
-        entropy = calculate_conditional_joint_entropy(forecast_weather_join_probabilities)
+        entropy = calculate_joint_entropy(forecast_weather_join_probabilities)
 
-        print_entropy("joint conditional", "Forecast says Rain/Sun VS real Weather Rain/Sun", forecast_weather_join_probabilities, entropy, "we have probabilities of real Weather Rain/Sun - given this, Forecast probabilities are calculated and thus the conditional entropy")
+        print_entropy("joint ", "Forecast says Rain/Sun VS real Weather Rain/Sun", forecast_weather_join_probabilities, entropy, "we have probabilities of real Weather Rain/Sun - given this, Forecast probabilities are calculated and thus the conditional entropy")
 
 
     #
