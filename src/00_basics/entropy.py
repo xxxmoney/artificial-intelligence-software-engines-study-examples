@@ -133,10 +133,11 @@ def calculate_kl_divergence(real_distribution, model_distribution):
     
     :param real_distribution:
     :param model_distribution:
-    :return:
+    :return: How close we are to ideal - the lower the number the closer we are to real - 0 means the model is equal to real
     """
-    real_entropy = calculate_entropy(real_distribution)
-    cross_entropy = calculate_cross_entropy(real_distribution, model_distribution)
+
+    cross_entropy = calculate_cross_entropy(real_distribution, model_distribution) # Positive number usually higher then real_entropy
+    real_entropy = calculate_entropy(real_distribution) # Entropy of the real
 
     return cross_entropy - real_entropy
 
