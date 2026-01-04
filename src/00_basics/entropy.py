@@ -56,8 +56,36 @@ def calculate_conditional_entropy(y_probabilities: list[float], x_given_y_probab
 
     return entropy
 
+def calculate_conditional_joint_entropy(joint_probabilities: list[list[float]]) -> float:
+    """
+    Calculates conditional probability from joint matrix
 
-def print_entropy(type: str, title: str, probabilities: list[float], entropy: float, description: Optional[str] = None) -> None:
+    Calculates H(X|Y) using the relation: H(X|Y) = H(X,Y) - H(Y)
+
+    :param joint_probabilities: Matrix of probabilities (row x_1 probabilities when y_1, row x_2 probabilities when y_2...)
+    :return:
+    """
+
+    # Calculate entropy for whole table, so H(X, Y)
+    joint_entropy = 0
+    for probabilities in joint_probabilities:
+        joint_entropy += calculate_entropy(probabilities)
+
+    # Calculate (marginal) y probabilities (basically just sum of each whole column)
+    # Example: Sum of Col 1 is Prob(Y=Rain), Sum of Col 2 is Prob(Y=Sun)
+    y_probabilities = [0] * len(joint_probabilities[0]) # For starters just 0s in length of each row
+    for row in joint_probabilities:
+        for i, probability in enumerate(row):
+            y_probabilities[i] += probability
+
+    # Now we can get the entropy for marginal y
+    y_entropy = calculate_entropy(y_probabilities)
+
+    # Result is the total entropy minus entropy of y
+    return joint_entropy - y_entropy
+
+
+def print_entropy(type: str, title: str, probabilities: list[list[float]], entropy: float, description: Optional[str] = None) -> None:
     print(f"[[{str.upper(type)}]]\n[{title}] ({probabilities}): {entropy}")
     if description is not None:
         print(f"\t - {description}\n")
@@ -72,25 +100,35 @@ if __name__ == "__main__":
         probabilities = [0.5, 0.5] # Two sides of coin - each has same chance
         entropy = calculate_entropy(probabilities)
 
-        print_entropy("normal", "Two coins same chance", probabilities, entropy, "as the coins have the same chance, the entropy is maximum - because we are maximally unsure what will happen")
+        print_entropy("normal", "Two coins same chance", [probabilities], entropy, "as the coins have the same chance, the entropy is maximum - because we are maximally unsure what will happen")
 
     def entropy_unfair_coin_example():
         probabilities = [0.9, 0.1] # Two sides of coin - but one has much greater chance than other
         entropy = calculate_entropy(probabilities)
 
-        print_entropy("normal", "Two coins one much greater chance", probabilities, entropy, "as one coin has much greater chance, the entropy is lower - because are more sure about one side happening")
+        print_entropy("normal", "Two coins one much greater chance", [probabilities], entropy, "as one coin has much greater chance, the entropy is lower - because are more sure about one side happening")
 
 
     def conditional_entropy_forecast_example():
         forecast_probabilities = [0.5, 0.5] # 50/50 chance for Rain/Sun
         weather_given_forecast_probabilities = [
-            [0.9, 0.1], # If Forecast is Rain - chances for real Weather
-            [0.2, 0.8], # If Forecast is Sun - chances for real Weather
+            [0.9, 0.1], # If Forecast is Rain - chances for real Weather - Rain/Sun
+            [0.2, 0.8], # If Forecast is Sun - chances for real Weather - Rain/Sun
         ]
 
         entropy = calculate_conditional_entropy(forecast_probabilities, weather_given_forecast_probabilities)
 
-        print_entropy("conditional", "Forecast says Rain/Sun VS real Weather Rain/Sun", forecast_probabilities, entropy, "Forecast can be Rain/Sun - we have probabilities for these in Forecast, given this, what are the chances for real Weather Rain/Sun")
+        print_entropy("conditional", "Forecast says Rain/Sun VS real Weather Rain/Sun", [forecast_probabilities], entropy, "we have probabilities of Forecast Rain/Sun, we then have probabilities of real Weather based on Forecast")
+
+    def join_conditional_entropy_forecast_example():
+        forecast_weather_join_probabilities = [
+            [0.45, 0.05], # If Forecast is Rain - chances for real Weather - Rain/Sun
+            [0.10, 0.40]  # If Forecast is Sun - chances for real Weather - Rain/Sun
+        ]
+
+        entropy = calculate_conditional_joint_entropy(forecast_weather_join_probabilities)
+
+        print_entropy("joint conditional", "Forecast says Rain/Sun VS real Weather Rain/Sun", forecast_weather_join_probabilities, entropy, "we have probabilities of real Weather Rain/Sun - given this, Forecast probabilities are calculated and thus the conditional entropy")
 
 
     #
@@ -107,3 +145,8 @@ if __name__ == "__main__":
     # Conditional entropy examples:
     #
     conditional_entropy_forecast_example()
+
+    #
+    # Joint conditional entropy examples:
+    #
+    join_conditional_entropy_forecast_example()
